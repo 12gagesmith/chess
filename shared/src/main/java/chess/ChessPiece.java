@@ -57,12 +57,12 @@ public class ChessPiece {
         ChessPiece piece = board.getPiece(myPosition);
         PieceType pieceType = getPieceType();
         switch (pieceType) {
-            case KING -> moves = MoveCalculator.calculateKing(piece, moves);
-            case QUEEN -> moves = MoveCalculator.calculateQueen(piece, moves);
-            case BISHOP -> moves = MoveCalculator.calculateBishop(piece, moves);
-            case KNIGHT -> moves = MoveCalculator.calculateKnight(piece, moves);
-            case ROOK -> moves = MoveCalculator.calculateRook(piece, moves);
-            case PAWN -> moves = MoveCalculator.calculatePawn(piece, moves);
+            case KING -> moves = MoveCalculator.calculateKing(board, piece, myPosition, moves);
+            case QUEEN -> moves = MoveCalculator.calculateQueen(board, piece, myPosition, moves);
+            case BISHOP -> moves = MoveCalculator.calculateBishop(board, piece, myPosition, moves);
+            case KNIGHT -> moves = MoveCalculator.calculateKnight(board, piece, myPosition, moves);
+            case ROOK -> moves = MoveCalculator.calculateRook(board, piece, myPosition, moves);
+            case PAWN -> moves = MoveCalculator.calculatePawn(board, piece, myPosition, moves);
             default -> throw new RuntimeException("Invalid Piece");
         }
         return moves;
