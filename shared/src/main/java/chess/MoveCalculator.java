@@ -54,6 +54,37 @@ public class MoveCalculator {
         return moves;
     }
 
+    private static ArrayList<ChessMove> goDiagonal(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves, String direction) {
+        ChessPosition nextPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
+        switch (direction) {
+            case "up_left" -> {
+                do {
+                    nextPosition = new ChessPosition(nextPosition.getRow() + 1, nextPosition.getColumn() - 1);
+                    if (isSquareOpen(board, nextPosition, myPiece)) {moves.add(new ChessMove(myPosition, nextPosition, null));}
+                } while (inBounds(nextPosition) && board.getPiece(nextPosition) == null);
+            }
+            case "up_right" -> {
+                do {
+                    nextPosition = new ChessPosition(nextPosition.getRow() + 1, nextPosition.getColumn() + 1);
+                    if (isSquareOpen(board, nextPosition, myPiece)) {moves.add(new ChessMove(myPosition, nextPosition, null));}
+                } while (inBounds(nextPosition) && board.getPiece(nextPosition) == null);
+            }
+            case "down_left" -> {
+                do {
+                    nextPosition = new ChessPosition(nextPosition.getRow() - 1, nextPosition.getColumn() - 1);
+                    if (isSquareOpen(board, nextPosition, myPiece)) {moves.add(new ChessMove(myPosition, nextPosition, null));}
+                } while (inBounds(nextPosition) && board.getPiece(nextPosition) == null);
+            }
+            case "down_right" -> {
+                do {
+                    nextPosition = new ChessPosition(nextPosition.getRow() - 1, nextPosition.getColumn() + 1);
+                    if (isSquareOpen(board, nextPosition, myPiece)) {moves.add(new ChessMove(myPosition, nextPosition, null));}
+                } while (inBounds(nextPosition) && board.getPiece(nextPosition) == null);
+            }
+        }
+        return moves;
+    }
+
     public static ArrayList<ChessMove> calculateKing(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves) {
         // These two lines get the next position, check if that square's open, then adds it to moves if it is.
         ChessPosition nextPosition = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn());
@@ -77,10 +108,22 @@ public class MoveCalculator {
     }
 
     public static ArrayList<ChessMove> calculateQueen(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves) {
+        moves = goStraight(board, myPiece, myPosition, moves, "up");
+        moves = goStraight(board, myPiece, myPosition, moves, "down");
+        moves = goStraight(board, myPiece, myPosition, moves, "left");
+        moves = goStraight(board, myPiece, myPosition, moves, "right");
+        moves = goDiagonal(board, myPiece, myPosition, moves, "up_left");
+        moves = goDiagonal(board, myPiece, myPosition, moves, "up_right");
+        moves = goDiagonal(board, myPiece, myPosition, moves, "down_left");
+        moves = goDiagonal(board, myPiece, myPosition, moves, "down_right");
         return moves;
     }
 
     public static ArrayList<ChessMove> calculateBishop(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves) {
+        moves = goDiagonal(board, myPiece, myPosition, moves, "up_left");
+        moves = goDiagonal(board, myPiece, myPosition, moves, "up_right");
+        moves = goDiagonal(board, myPiece, myPosition, moves, "down_left");
+        moves = goDiagonal(board, myPiece, myPosition, moves, "down_right");
         return moves;
     }
 
