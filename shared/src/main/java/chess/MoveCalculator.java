@@ -4,11 +4,10 @@ import java.util.ArrayList;
 
 public class MoveCalculator {
     private static boolean canCapture(ChessPiece myPiece, ChessPiece otherPiece) {
-        boolean isDifferent = myPiece.getTeamColor() != otherPiece.getTeamColor();
-        if (myPiece.getPieceType() != ChessPiece.PieceType.PAWN) {
-            return isDifferent;
+        if (otherPiece == null) {
+            return false;
         }
-        return false;
+        return myPiece.getTeamColor() != otherPiece.getTeamColor();
     }
 
     private static boolean inBounds(ChessPosition position) {
@@ -20,10 +19,24 @@ public class MoveCalculator {
             return false;
         }
         ChessPiece otherPiece = board.getPiece(position);
-        return otherPiece == null || canCapture(myPiece, otherPiece);
+        if (myPiece.getPieceType() != ChessPiece.PieceType.PAWN) {
+            return otherPiece == null || canCapture(myPiece, otherPiece);
+        }
+        return otherPiece == null;
     }
 
-    private static ArrayList<ChessMove> goStraight(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves, String direction) {
+    private static void checkPromotion(ChessPosition myPosition, ChessPosition nextPosition, ArrayList<ChessMove> moves, int row) {
+        if (nextPosition.getRow() == row) {
+            moves.add(new ChessMove(myPosition, nextPosition, ChessPiece.PieceType.QUEEN));
+            moves.add(new ChessMove(myPosition, nextPosition, ChessPiece.PieceType.BISHOP));
+            moves.add(new ChessMove(myPosition, nextPosition, ChessPiece.PieceType.KNIGHT));
+            moves.add(new ChessMove(myPosition, nextPosition, ChessPiece.PieceType.ROOK));
+        } else {
+            moves.add(new ChessMove(myPosition, nextPosition, null));
+        }
+    }
+
+    private static void goStraight(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves, String direction) {
         ChessPosition nextPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
         switch (direction) {
             case "up" -> {
@@ -51,10 +64,9 @@ public class MoveCalculator {
                 } while (inBounds(nextPosition) && board.getPiece(nextPosition) == null);
             }
         }
-        return moves;
     }
 
-    private static ArrayList<ChessMove> goDiagonal(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves, String direction) {
+    private static void goDiagonal(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves, String direction) {
         ChessPosition nextPosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn());
         switch (direction) {
             case "up_left" -> {
@@ -82,10 +94,9 @@ public class MoveCalculator {
                 } while (inBounds(nextPosition) && board.getPiece(nextPosition) == null);
             }
         }
-        return moves;
     }
 
-    public static ArrayList<ChessMove> calculateKing(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves) {
+    public static void calculateKing(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves) {
         // These two lines get the next position, check if that square's open, then adds it to moves if it is.
         ChessPosition nextPosition = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn());
         if (isSquareOpen(board, nextPosition, myPiece)) {moves.add(new ChessMove(myPosition, nextPosition, null));}
@@ -104,30 +115,27 @@ public class MoveCalculator {
         if (isSquareOpen(board, nextPosition, myPiece)) {moves.add(new ChessMove(myPosition, nextPosition, null));}
         nextPosition = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 1);
         if (isSquareOpen(board, nextPosition, myPiece)) {moves.add(new ChessMove(myPosition, nextPosition, null));}
-        return moves;
     }
 
-    public static ArrayList<ChessMove> calculateQueen(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves) {
-        moves = goStraight(board, myPiece, myPosition, moves, "up");
-        moves = goStraight(board, myPiece, myPosition, moves, "down");
-        moves = goStraight(board, myPiece, myPosition, moves, "left");
-        moves = goStraight(board, myPiece, myPosition, moves, "right");
-        moves = goDiagonal(board, myPiece, myPosition, moves, "up_left");
-        moves = goDiagonal(board, myPiece, myPosition, moves, "up_right");
-        moves = goDiagonal(board, myPiece, myPosition, moves, "down_left");
-        moves = goDiagonal(board, myPiece, myPosition, moves, "down_right");
-        return moves;
+    public static void calculateQueen(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves) {
+        goStraight(board, myPiece, myPosition, moves, "up");
+        goStraight(board, myPiece, myPosition, moves, "down");
+        goStraight(board, myPiece, myPosition, moves, "left");
+        goStraight(board, myPiece, myPosition, moves, "right");
+        goDiagonal(board, myPiece, myPosition, moves, "up_left");
+        goDiagonal(board, myPiece, myPosition, moves, "up_right");
+        goDiagonal(board, myPiece, myPosition, moves, "down_left");
+        goDiagonal(board, myPiece, myPosition, moves, "down_right");
     }
 
-    public static ArrayList<ChessMove> calculateBishop(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves) {
-        moves = goDiagonal(board, myPiece, myPosition, moves, "up_left");
-        moves = goDiagonal(board, myPiece, myPosition, moves, "up_right");
-        moves = goDiagonal(board, myPiece, myPosition, moves, "down_left");
-        moves = goDiagonal(board, myPiece, myPosition, moves, "down_right");
-        return moves;
+    public static void calculateBishop(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves) {
+        goDiagonal(board, myPiece, myPosition, moves, "up_left");
+        goDiagonal(board, myPiece, myPosition, moves, "up_right");
+        goDiagonal(board, myPiece, myPosition, moves, "down_left");
+        goDiagonal(board, myPiece, myPosition, moves, "down_right");
     }
 
-    public static ArrayList<ChessMove> calculateKnight(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves) {
+    public static void calculateKnight(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves) {
         // These two lines get the next position, check if that square's open, then adds it to moves if it is.
         ChessPosition nextPosition = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 2);
         if (isSquareOpen(board, nextPosition, myPiece)) {moves.add(new ChessMove(myPosition, nextPosition, null));}
@@ -146,18 +154,34 @@ public class MoveCalculator {
         if (isSquareOpen(board, nextPosition, myPiece)) {moves.add(new ChessMove(myPosition, nextPosition, null));}
         nextPosition = new ChessPosition(myPosition.getRow() - 2, myPosition.getColumn() - 1);
         if (isSquareOpen(board, nextPosition, myPiece)) {moves.add(new ChessMove(myPosition, nextPosition, null));}
-        return moves;
     }
 
-    public static ArrayList<ChessMove> calculateRook(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves) {
-        moves = goStraight(board, myPiece, myPosition, moves, "up");
-        moves = goStraight(board, myPiece, myPosition, moves, "down");
-        moves = goStraight(board, myPiece, myPosition, moves, "left");
-        moves = goStraight(board, myPiece, myPosition, moves, "right");
-        return moves;
+    public static void calculateRook(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves) {
+        goStraight(board, myPiece, myPosition, moves, "up");
+        goStraight(board, myPiece, myPosition, moves, "down");
+        goStraight(board, myPiece, myPosition, moves, "left");
+        goStraight(board, myPiece, myPosition, moves, "right");
     }
 
-    public static ArrayList<ChessMove> calculatePawn(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves) {
-        return moves;
+    public static void calculatePawn(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves, int up_down, int proRow, int startRow) {
+        ChessPosition nextPosition = new ChessPosition(myPosition.getRow() + up_down, myPosition.getColumn());
+        if (isSquareOpen(board, nextPosition, myPiece)) {
+            checkPromotion(myPosition, nextPosition, moves, proRow);
+        }
+        if (myPosition.getRow() == startRow && board.getPiece(nextPosition) == null) {
+            nextPosition = new ChessPosition(myPosition.getRow() + (2 * up_down), myPosition.getColumn());
+            if (isSquareOpen(board, nextPosition, myPiece)) {moves.add(new ChessMove(myPosition, nextPosition, null));}
+        }
+        nextPosition = new ChessPosition(myPosition.getRow() + up_down, myPosition.getColumn() - 1);
+        if (inBounds(nextPosition) && canCapture(myPiece, board.getPiece(nextPosition))) {checkPromotion(myPosition, nextPosition, moves, proRow);}
+        nextPosition = new ChessPosition(myPosition.getRow() + up_down, myPosition.getColumn() + 1);
+        if (inBounds(nextPosition) && canCapture(myPiece, board.getPiece(nextPosition))) {checkPromotion(myPosition, nextPosition, moves, proRow);}
+    }
+
+    public static void checkPawnColor(ChessBoard board, ChessPiece myPiece, ChessPosition myPosition, ArrayList<ChessMove> moves) {
+        switch (myPiece.getTeamColor()) {
+            case WHITE -> calculatePawn(board, myPiece, myPosition, moves, 1, 8, 2);
+            case BLACK -> calculatePawn(board, myPiece, myPosition, moves, -1, 1, 7);
+        }
     }
 }
