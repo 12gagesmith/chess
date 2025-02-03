@@ -80,16 +80,14 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         ArrayList<ChessMove> moves = new ArrayList<>();
-        ChessPiece piece = board.getPiece(myPosition);
-        PieceType pieceType = getPieceType();
-        switch (pieceType) {
-            case KING -> MoveCalculator.calculateKing(board, piece, myPosition, moves);
-            case QUEEN -> MoveCalculator.calculateQueen(board, piece, myPosition, moves);
-            case BISHOP -> MoveCalculator.calculateBishop(board, piece, myPosition, moves);
-            case KNIGHT -> MoveCalculator.calculateKnight(board, piece, myPosition, moves);
-            case ROOK -> MoveCalculator.calculateRook(board, piece, myPosition, moves);
-            case PAWN -> MoveCalculator.checkPawnColor(board, piece, myPosition, moves);
-            default -> throw new RuntimeException("Invalid Piece");
+        PieceType myType = getPieceType();
+        switch (myType) {
+            case KING -> MoveCalculator.kingCalculator(board, myPosition, moves);
+            case KNIGHT -> MoveCalculator.knightCalculator(board, myPosition, moves);
+            case ROOK -> MoveCalculator.rookCalculator(board, myPosition, moves);
+            case BISHOP -> MoveCalculator.bishopCalculator(board, myPosition, moves);
+            case QUEEN -> MoveCalculator.queenCalculator(board, myPosition, moves);
+            case PAWN -> MoveCalculator.checkPawnColor(board, myPosition, moves);
         }
         return moves;
     }

@@ -48,32 +48,18 @@ public class ChessBoard {
     }
 
     private void addRow(ChessGame.TeamColor color, int row) {
-        ChessPiece nextPiece;
+        ChessPiece nextPiece = null;
         ChessPosition nextPosition;
         for (int i = 1; i <= 8; i++) {
-            nextPosition = new ChessPosition(row, i);
             switch (i) {
-                case 1, 8 -> {
-                    nextPiece = new ChessPiece(color, ChessPiece.PieceType.ROOK);
-                    addPiece(nextPosition, nextPiece);
-                }
-                case 2, 7 -> {
-                    nextPiece = new ChessPiece(color, ChessPiece.PieceType.KNIGHT);
-                    addPiece(nextPosition, nextPiece);
-                }
-                case 3, 6 -> {
-                    nextPiece = new ChessPiece(color, ChessPiece.PieceType.BISHOP);
-                    addPiece(nextPosition, nextPiece);
-                }
-                case 4 -> {
-                    nextPiece = new ChessPiece(color, ChessPiece.PieceType.QUEEN);
-                    addPiece(nextPosition, nextPiece);
-                }
-                case 5 -> {
-                    nextPiece = new ChessPiece(color, ChessPiece.PieceType.KING);
-                    addPiece(nextPosition, nextPiece);
-                }
+                case 1, 8 -> nextPiece = new ChessPiece(color, ChessPiece.PieceType.ROOK);
+                case 2, 7 -> nextPiece = new ChessPiece(color, ChessPiece.PieceType.KNIGHT);
+                case 3, 6 -> nextPiece = new ChessPiece(color, ChessPiece.PieceType.BISHOP);
+                case 4 -> nextPiece = new ChessPiece(color, ChessPiece.PieceType.QUEEN);
+                case 5 -> nextPiece = new ChessPiece(color, ChessPiece.PieceType.KING);
             }
+            nextPosition = new ChessPosition(row, i);
+            addPiece(nextPosition, nextPiece);
         }
     }
 
