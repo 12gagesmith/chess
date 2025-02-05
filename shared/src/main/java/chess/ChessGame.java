@@ -46,7 +46,12 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece myPiece = myBoard.getPiece(startPosition);
+        Collection<ChessMove> moves = myPiece.pieceMoves(myBoard, startPosition);
+        for (ChessMove move : moves) {
+            continue;
+        }
+        return moves;
     }
 
     /**
@@ -59,7 +64,7 @@ public class ChessGame {
         throw new RuntimeException("Not implemented");
     }
 
-    public ChessPosition findKingPosition(TeamColor teamColor) {
+    private ChessPosition findKingPosition(TeamColor teamColor) {
         ChessPosition nextPosition;
         ChessPiece nextPiece;
         for (int i = 1; i <= 8; i++) {
@@ -93,7 +98,7 @@ public class ChessGame {
                 if (nextPiece != null && nextPiece.getTeamColor() != teamColor) {
                     Collection<ChessMove> moves = nextPiece.pieceMoves(myBoard, nextPosition);
                     for (ChessMove move : moves) {
-                        if (move.getEndPosition() == kingPosition) {
+                        if (move.getEndPosition().equals(kingPosition)) {
                             return true;
                         }
                     }
@@ -101,6 +106,22 @@ public class ChessGame {
             }
         }
         return false;
+    }
+
+    private Collection<ChessMove> findAllValidMoves(TeamColor teamColor) {
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        ChessPosition nextPosition;
+        ChessPiece nextPiece;
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                nextPosition = new ChessPosition(i, j);
+                nextPiece = myBoard.getPiece(nextPosition);
+                if (nextPiece != null && nextPiece.getTeamColor() == teamColor) {
+                    moves.addAll(validMoves(nextPosition));
+                }
+            }
+        }
+        return moves;
     }
 
     /**
