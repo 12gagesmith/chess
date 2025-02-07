@@ -47,9 +47,15 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece myPiece = myBoard.getPiece(startPosition);
+        if (myPiece == null) {return null;}
         Collection<ChessMove> moves = myPiece.pieceMoves(myBoard, startPosition);
         for (ChessMove move : moves) {
-            continue;
+            ChessBoard trialBoard = myBoard.clone();
+            trialBoard.addPiece(move.getEndPosition(), myPiece);
+            trialBoard.addPiece(move.getStartPosition(), null);
+            if (isInCheck(myPiece.getTeamColor())) {
+                moves.remove(move);
+            }
         }
         return moves;
     }
