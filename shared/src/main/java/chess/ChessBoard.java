@@ -63,10 +63,6 @@ public class ChessBoard implements Cloneable{
         }
     }
 
-    private ChessPiece[][] getBoard() {return squares;}
-
-    private void setBoard(ChessPiece[][] board) {this.squares = board;}
-
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)
@@ -107,8 +103,16 @@ public class ChessBoard implements Cloneable{
     public ChessBoard clone() {
         try {
             ChessBoard clone = (ChessBoard) super.clone();
-            ChessPiece[][] clonedSquares = getBoard().clone();
-            clone.setBoard(clonedSquares);
+            clone.squares = new ChessPiece[8][8];
+            for (int i = 1; i <= 8; i++) {
+                for (int j = 1; j <= 8; j++) {
+                    ChessPosition currPosition = new ChessPosition(i, j);
+                    ChessPiece currPiece = this.getPiece(currPosition);
+                    if (currPiece != null) {
+                        clone.addPiece(currPosition, currPiece.clone());
+                    }
+                }
+            }
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
