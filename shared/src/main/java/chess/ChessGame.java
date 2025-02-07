@@ -49,13 +49,18 @@ public class ChessGame {
         ChessPiece myPiece = myBoard.getPiece(startPosition);
         if (myPiece == null) {return null;}
         Collection<ChessMove> moves = myPiece.pieceMoves(myBoard, startPosition);
+        ArrayList<ChessMove> moves_to_remove = new ArrayList<>();
         for (ChessMove move : moves) {
-            ChessBoard trialBoard = myBoard.clone();
-            trialBoard.addPiece(move.getEndPosition(), myPiece);
-            trialBoard.addPiece(move.getStartPosition(), null);
+            ChessBoard tempBoard = myBoard.clone();
+            myBoard.addPiece(move.getEndPosition(), myPiece);
+            myBoard.addPiece(move.getStartPosition(), null);
             if (isInCheck(myPiece.getTeamColor())) {
-                moves.remove(move);
+                moves_to_remove.add(move);
             }
+            myBoard.setSquares(tempBoard.getSquares());
+        }
+        for (ChessMove move : moves_to_remove) {
+            moves.remove(move);
         }
         return moves;
     }
@@ -67,7 +72,22 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        TeamColor turn = getTeamTurn();
+        ArrayList<ChessMove> moves = (ArrayList<ChessMove>) validMoves(move.getStartPosition());
+        ChessPiece myPiece = myBoard.getPiece(move.getStartPosition());
+        if (myPiece != null && turn == myPiece.getTeamColor() && moves.contains(move)) {
+            if (move.getPromotionPiece() != null) {
+                myPiece = new ChessPiece(myPiece.getTeamColor(), move.getPromotionPiece());
+            }
+            myBoard.addPiece(move.getEndPosition(), myPiece);
+            myBoard.addPiece(move.getStartPosition(), null);
+            switch (turn) {
+                case BLACK -> setTeamTurn(TeamColor.WHITE);
+                case WHITE -> setTeamTurn(TeamColor.BLACK);
+            }
+        } else {
+            throw new InvalidMoveException();
+        }
     }
 
     private ChessPosition findKingPosition(TeamColor teamColor) {

@@ -75,6 +75,14 @@ public class ChessBoard implements Cloneable{
         addRow(ChessGame.TeamColor.BLACK, 8);
     }
 
+    public ChessPiece[][] getSquares() {
+        return squares;
+    }
+
+    public void setSquares(ChessPiece[][] squares) {
+        this.squares = squares;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
