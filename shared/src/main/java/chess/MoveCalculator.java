@@ -9,8 +9,8 @@ public class MoveCalculator {
         return (myPiece.getTeamColor() != otherPiece.getTeamColor());
     }
 
-    private static boolean inBounds (ChessPosition nextPosition) {
-        return nextPosition.getRow() >= 1 && nextPosition.getRow() <= 8 && nextPosition.getColumn() >= 1 && nextPosition.getColumn() <= 8;
+    private static boolean inBounds (ChessPosition position) {
+        return position.getRow() >= 1 && position.getRow() <= 8 && position.getColumn() >= 1 && position.getColumn() <= 8;
     }
 
     private static boolean isSquareOpen(ChessBoard board, ChessPosition myPosition, ChessPosition nextPosition) {
@@ -34,22 +34,15 @@ public class MoveCalculator {
 
     public static void knightCalculator(ChessBoard board, ChessPosition myPosition, ArrayList<ChessMove> moves) {
         ChessPosition nextPosition;
-        nextPosition = new ChessPosition(myPosition.getRow() - 2, myPosition.getColumn() + 1);
-        if (isSquareOpen(board, myPosition, nextPosition)) { moves.add(new ChessMove(myPosition, nextPosition, null)); }
-        nextPosition = new ChessPosition(myPosition.getRow() - 2, myPosition.getColumn() - 1);
-        if (isSquareOpen(board, myPosition, nextPosition)) { moves.add(new ChessMove(myPosition, nextPosition, null)); }
-        nextPosition = new ChessPosition(myPosition.getRow() + 2, myPosition.getColumn() + 1);
-        if (isSquareOpen(board, myPosition, nextPosition)) { moves.add(new ChessMove(myPosition, nextPosition, null)); }
-        nextPosition = new ChessPosition(myPosition.getRow() + 2, myPosition.getColumn() - 1);
-        if (isSquareOpen(board, myPosition, nextPosition)) { moves.add(new ChessMove(myPosition, nextPosition, null)); }
-        nextPosition = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() + 2);
-        if (isSquareOpen(board, myPosition, nextPosition)) { moves.add(new ChessMove(myPosition, nextPosition, null)); }
-        nextPosition = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 2);
-        if (isSquareOpen(board, myPosition, nextPosition)) { moves.add(new ChessMove(myPosition, nextPosition, null)); }
-        nextPosition = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + 2);
-        if (isSquareOpen(board, myPosition, nextPosition)) { moves.add(new ChessMove(myPosition, nextPosition, null)); }
-        nextPosition = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 2);
-        if (isSquareOpen(board, myPosition, nextPosition)) { moves.add(new ChessMove(myPosition, nextPosition, null)); }
+        int[] indexes = new int[] {-2, -1, 1, 2};
+        for (int row_i : indexes) {
+            for (int col_i : indexes) {
+                if (Math.abs(row_i) != Math.abs(col_i)) {
+                    nextPosition = new ChessPosition(myPosition.getRow() - row_i, myPosition.getColumn() + col_i);
+                    if (isSquareOpen(board, myPosition, nextPosition)) { moves.add(new ChessMove(myPosition, nextPosition, null)); }
+                }
+            }
+        }
     }
 
     private static void goOneDirection(ChessBoard board, ChessPosition myPosition, ArrayList<ChessMove> moves, int rowDir, int colDir) {

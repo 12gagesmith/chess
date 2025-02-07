@@ -48,9 +48,7 @@ public class ChessPiece implements Cloneable {
     @Override
     public ChessPiece clone() {
         try {
-            ChessPiece clone = (ChessPiece) super.clone();
-            // TODO: copy mutable state here, so the clone can't change the internals of the original
-            return clone;
+            return (ChessPiece) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
         }

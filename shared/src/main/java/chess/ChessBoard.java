@@ -38,28 +38,28 @@ public class ChessBoard implements Cloneable{
     }
 
     private void addPawns(ChessGame.TeamColor color, int row) {
-        ChessPiece nextPiece;
-        ChessPosition nextPosition;
+        ChessPiece currPiece;
+        ChessPosition currPosition;
         for (int i = 1; i <= 8; i++) {
-            nextPiece = new ChessPiece(color, ChessPiece.PieceType.PAWN);
-            nextPosition = new ChessPosition(row, i);
-            addPiece(nextPosition, nextPiece);
+            currPiece = new ChessPiece(color, ChessPiece.PieceType.PAWN);
+            currPosition = new ChessPosition(row, i);
+            addPiece(currPosition, currPiece);
         }
     }
 
     private void addRow(ChessGame.TeamColor color, int row) {
-        ChessPiece nextPiece = null;
-        ChessPosition nextPosition;
+        ChessPiece currPiece = null;
+        ChessPosition currPosition;
         for (int i = 1; i <= 8; i++) {
             switch (i) {
-                case 1, 8 -> nextPiece = new ChessPiece(color, ChessPiece.PieceType.ROOK);
-                case 2, 7 -> nextPiece = new ChessPiece(color, ChessPiece.PieceType.KNIGHT);
-                case 3, 6 -> nextPiece = new ChessPiece(color, ChessPiece.PieceType.BISHOP);
-                case 4 -> nextPiece = new ChessPiece(color, ChessPiece.PieceType.QUEEN);
-                case 5 -> nextPiece = new ChessPiece(color, ChessPiece.PieceType.KING);
+                case 1, 8 -> currPiece = new ChessPiece(color, ChessPiece.PieceType.ROOK);
+                case 2, 7 -> currPiece = new ChessPiece(color, ChessPiece.PieceType.KNIGHT);
+                case 3, 6 -> currPiece = new ChessPiece(color, ChessPiece.PieceType.BISHOP);
+                case 4 -> currPiece = new ChessPiece(color, ChessPiece.PieceType.QUEEN);
+                case 5 -> currPiece = new ChessPiece(color, ChessPiece.PieceType.KING);
             }
-            nextPosition = new ChessPosition(row, i);
-            addPiece(nextPosition, nextPiece);
+            currPosition = new ChessPosition(row, i);
+            addPiece(currPosition, currPiece);
         }
     }
 

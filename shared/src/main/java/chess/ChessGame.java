@@ -93,16 +93,16 @@ public class ChessGame {
     }
 
     private ChessPosition findKingPosition(TeamColor teamColor) {
-        ChessPosition nextPosition;
-        ChessPiece nextPiece;
+        ChessPosition currPosition;
+        ChessPiece currPiece;
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 8; j++) {
-                nextPosition = new ChessPosition(i, j);
-                nextPiece = myBoard.getPiece(nextPosition);
-                if (nextPiece != null
-                        && nextPiece.getPieceType() == ChessPiece.PieceType.KING
-                        && nextPiece.getTeamColor() == teamColor) {
-                    return nextPosition;
+                currPosition = new ChessPosition(i, j);
+                currPiece = myBoard.getPiece(currPosition);
+                if (currPiece != null
+                        && currPiece.getPieceType() == ChessPiece.PieceType.KING
+                        && currPiece.getTeamColor() == teamColor) {
+                    return currPosition;
                 }
             }
         }
@@ -117,14 +117,14 @@ public class ChessGame {
      */
     public boolean isInCheck(TeamColor teamColor) {
         ChessPosition kingPosition = findKingPosition(teamColor);
-        ChessPosition nextPosition;
-        ChessPiece nextPiece;
+        ChessPosition currPosition;
+        ChessPiece currPiece;
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 8; j++) {
-                nextPosition = new ChessPosition(i, j);
-                nextPiece = myBoard.getPiece(nextPosition);
-                if (nextPiece != null && nextPiece.getTeamColor() != teamColor) {
-                    Collection<ChessMove> moves = nextPiece.pieceMoves(myBoard, nextPosition);
+                currPosition = new ChessPosition(i, j);
+                currPiece = myBoard.getPiece(currPosition);
+                if (currPiece != null && currPiece.getTeamColor() != teamColor) {
+                    Collection<ChessMove> moves = currPiece.pieceMoves(myBoard, currPosition);
                     for (ChessMove move : moves) {
                         if (move.getEndPosition().equals(kingPosition)) {
                             return true;
@@ -138,14 +138,14 @@ public class ChessGame {
 
     private Collection<ChessMove> findAllValidMoves(TeamColor teamColor) {
         ArrayList<ChessMove> moves = new ArrayList<>();
-        ChessPosition nextPosition;
-        ChessPiece nextPiece;
+        ChessPosition currPosition;
+        ChessPiece currPiece;
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 8; j++) {
-                nextPosition = new ChessPosition(i, j);
-                nextPiece = myBoard.getPiece(nextPosition);
-                if (nextPiece != null && nextPiece.getTeamColor() == teamColor) {
-                    moves.addAll(validMoves(nextPosition));
+                currPosition = new ChessPosition(i, j);
+                currPiece = myBoard.getPiece(currPosition);
+                if (currPiece != null && currPiece.getTeamColor() == teamColor) {
+                    moves.addAll(validMoves(currPosition));
                 }
             }
         }
