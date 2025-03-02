@@ -3,8 +3,11 @@ package server;
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import service.RegisterRequest;
+import service.RegisterResult;
 import service.UserService;
 import spark.*;
+
+import java.util.Map;
 
 public class Server {
 
@@ -42,8 +45,8 @@ public class Server {
 
     private Object register(Request req, Response res) throws DataAccessException {
         RegisterRequest registerRequest = new Gson().fromJson(req.body(), RegisterRequest.class);
-        this.userService.register(registerRequest);
-        return null;
+        RegisterResult registerResult = this.userService.register(registerRequest);
+        return new Gson().toJson(registerResult);
     }
 
     private Object login(Request req, Response res) {
