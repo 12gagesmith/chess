@@ -1,27 +1,26 @@
 package dataaccess;
 
-import service.Game;
+import model.GameData;
 import java.util.ArrayList;
 
 public class MemoryGameDAO implements GameDAO{
     @Override
-    public ArrayList<Game> listGames() {
+    public ArrayList<GameData> listGames() {
         return null;
     }
 
     @Override
-    public Game createGame(String gameName) {
+    public GameData createGame(String gameName) {
         return null;
     }
 
     @Override
-    public Game getGame(String gameID) {
+    public GameData getGame(Integer gameID) {
         return null;
     }
 
     @Override
-    public void updateGame(Game game, String gameID) {
-
+    public void updateGame(GameData gameData, Integer gameID) {
     }
 
     @Override

@@ -2,11 +2,9 @@ package service;
 
 import chess.ChessGame;
 import dataaccess.*;
-import model.AuthData;
-import model.UserData;
+import model.*;
 import service.records.*;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.UUID;
 
 public class Service {
@@ -34,7 +32,7 @@ public class Service {
 
     public LoginResult login(LoginRequest loginRequest) throws DataAccessException {
         UserData userData = this.userDAO.getUser(loginRequest.username());
-        if (userData == null || !Objects.equals(loginRequest.password(), userData.password())) {
+        if (userData == null || !loginRequest.password().equals(userData.password())) {
             throw new DataAccessException("Error: invalid username or password");
         }
         AuthData authData = new AuthData(UUID.randomUUID().toString(), userData.username());
@@ -56,42 +54,45 @@ public class Service {
 
     public ListResult list(ListRequest listRequest) throws DataAccessException {
         authenticate(listRequest.authToken());
-        ArrayList<Game> gameList = this.gameDAO.listGames();
+        ArrayList<GameData> gameList = this.gameDAO.listGames();
         return new ListResult(gameList);
     }
 
     public CreateResult create(CreateRequest createRequest) throws DataAccessException {
         authenticate(createRequest.authToken());
-        Game game = this.gameDAO.createGame(createRequest.gameName());
-        return new CreateResult(game.getGameID());
+        GameData gameData = this.gameDAO.createGame(createRequest.gameName());
+        return new CreateResult(gameData.gameID());
     }
 
-    private void modifyGame(Game game, String username, ChessGame.TeamColor playerColor) throws DataAccessException {
+    private GameData modifyGame(GameData gameData, String username, ChessGame.TeamColor playerColor) throws DataAccessException {
         //update the game with the new player and color
+        String whiteUsername = gameData.whiteUsername();
+        String blackUsername = gameData.blackUsername();
         switch (playerColor) {
             case WHITE -> {
-                if (game.getWhiteUsername() == null) {
-                    game.setWhiteUsername(username);
+                if (whiteUsername == null) {
+                    whiteUsername = username;
                 } else {
                     throw new DataAccessException("Error: color already taken");
                 }
             }
             case BLACK -> {
-                if (game.getBlackUsername() == null) {
-                    game.setBlackUsername(username);
+                if (blackUsername == null) {
+                    blackUsername = username;
                 } else {
                     throw new DataAccessException("Error: color already taken");
                 }
             }
         }
+        return new GameData(gameData.gameID(), whiteUsername, blackUsername, gameData.gameName(), gameData.game());
     }
 
     public void join(JoinRequest joinRequest) throws DataAccessException {
         authenticate(joinRequest.authToken());
-        Game game = this.gameDAO.getGame(joinRequest.gameID());
+        GameData gameData = this.gameDAO.getGame(joinRequest.gameID());
         UserData userData = this.userDAO.getUser(this.authDAO.getAuth(joinRequest.authToken()).username());
-        modifyGame(game, userData.username(), joinRequest.playerColor());
-        this.gameDAO.updateGame(game, joinRequest.gameID());
+        GameData newGameData = modifyGame(gameData, userData.username(), joinRequest.playerColor());
+        this.gameDAO.updateGame(newGameData, joinRequest.gameID());
     }
 
     public void clear() {
