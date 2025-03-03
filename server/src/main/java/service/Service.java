@@ -22,7 +22,7 @@ public class Service {
     public RegisterResult register(RegisterRequest registerRequest) throws DataAccessException {
         UserData userData = this.userDAO.getUser(registerRequest.username());
         if (userData != null) {
-            throw new DataAccessException("Error: username already taken");
+            throw new DataAccessException(403, "Error: username already taken");
         }
         userData = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
         AuthData authData = this.userDAO.createUser(userData);
@@ -33,7 +33,7 @@ public class Service {
     public LoginResult login(LoginRequest loginRequest) throws DataAccessException {
         UserData userData = this.userDAO.getUser(loginRequest.username());
         if (userData == null || !loginRequest.password().equals(userData.password())) {
-            throw new DataAccessException("Error: invalid username or password");
+            throw new DataAccessException(401, "Error: invalid username or password");
         }
         AuthData authData = new AuthData(UUID.randomUUID().toString(), userData.username());
         this.authDAO.createAuth(authData);
@@ -43,7 +43,7 @@ public class Service {
     private void authenticate(String authToken) throws DataAccessException {
         AuthData authData = this.authDAO.getAuth(authToken);
         if (authData == null) {
-            throw new DataAccessException("Error: unauthorized");
+            throw new DataAccessException(401, "Error: unauthorized");
         }
     }
 
@@ -58,8 +58,8 @@ public class Service {
         return new ListResult(gameList);
     }
 
-    public CreateResult create(CreateRequest createRequest) throws DataAccessException {
-        authenticate(createRequest.authToken());
+    public CreateResult create(CreateRequest createRequest, String authToken) throws DataAccessException {
+        authenticate(authToken);
         GameData gameData = this.gameDAO.createGame(createRequest.gameName());
         return new CreateResult(gameData.gameID());
     }
@@ -73,24 +73,24 @@ public class Service {
                 if (whiteUsername == null) {
                     whiteUsername = username;
                 } else {
-                    throw new DataAccessException("Error: color already taken");
+                    throw new DataAccessException(403, "Error: color already taken");
                 }
             }
             case BLACK -> {
                 if (blackUsername == null) {
                     blackUsername = username;
                 } else {
-                    throw new DataAccessException("Error: color already taken");
+                    throw new DataAccessException(403, "Error: color already taken");
                 }
             }
         }
         return new GameData(gameData.gameID(), whiteUsername, blackUsername, gameData.gameName(), gameData.game());
     }
 
-    public void join(JoinRequest joinRequest) throws DataAccessException {
-        authenticate(joinRequest.authToken());
+    public void join(JoinRequest joinRequest, String authToken) throws DataAccessException {
+        authenticate(authToken);
         GameData gameData = this.gameDAO.getGame(joinRequest.gameID());
-        UserData userData = this.userDAO.getUser(this.authDAO.getAuth(joinRequest.authToken()).username());
+        UserData userData = this.userDAO.getUser(this.authDAO.getAuth(authToken).username());
         GameData newGameData = modifyGame(gameData, userData.username(), joinRequest.playerColor());
         this.gameDAO.updateGame(newGameData, joinRequest.gameID());
     }

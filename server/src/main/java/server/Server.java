@@ -27,6 +27,7 @@ public class Server {
         Spark.post("/game", this::createGame);
         Spark.put("/game", this::joinGame);
         Spark.delete("/db", this::clear);
+        Spark.exception(DataAccessException.class, this::exceptionHandler);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -38,6 +39,11 @@ public class Server {
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
+    }
+
+    private void exceptionHandler(DataAccessException ex, Request req, Response res) {
+        res.status(ex.getStatusCode());
+        res.body(new Gson().toJson(ex.getMessage()));
     }
 
     private Object register(Request req, Response res) throws DataAccessException {
@@ -53,31 +59,31 @@ public class Server {
     }
 
     private Object logout(Request req, Response res) throws DataAccessException {
-        LogoutRequest logoutRequest = new Gson().fromJson(req.body(), LogoutRequest.class);
+        LogoutRequest logoutRequest = new LogoutRequest(req.headers("authorization"));
         this.service.logout(logoutRequest);
-        return new Gson().toJson("");
+        return "{}";
     }
 
     private Object listGames(Request req, Response res) throws DataAccessException {
-        ListRequest listRequest = new Gson().fromJson(req.body(), ListRequest.class);
+        ListRequest listRequest = new ListRequest(req.headers("authorization"));
         ListResult listResult = this.service.list(listRequest);
         return new Gson().toJson(listResult);
     }
 
     private Object createGame(Request req, Response res) throws DataAccessException {
         CreateRequest createRequest = new Gson().fromJson(req.body(), CreateRequest.class);
-        CreateResult createResult = this.service.create(createRequest);
+        CreateResult createResult = this.service.create(createRequest, req.headers("authorization"));
         return new Gson().toJson(createResult);
     }
 
     private Object joinGame(Request req, Response res) throws DataAccessException {
         JoinRequest joinRequest = new Gson().fromJson(req.body(), JoinRequest.class);
-        this.service.join(joinRequest);
-        return new Gson().toJson("");
+        this.service.join(joinRequest, req.headers("authorization"));
+        return "{}";
     }
 
     private Object clear(Request req, Response res) {
         this.service.clear();
-        return new Gson().toJson("");
+        return "{}";
     }
 }
