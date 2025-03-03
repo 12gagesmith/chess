@@ -2,18 +2,16 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
-import service.*;
+import service.Service;
 import service.records.*;
 import spark.*;
 
 public class Server {
 
-    private final UserService userService;
-    private final GameService gameService;
+    private final Service service;
 
     public Server() {
-        this.userService = new UserService();
-        this.gameService = new GameService();
+        this.service = new Service();
     }
 
     public int run(int desiredPort) {
@@ -44,43 +42,42 @@ public class Server {
 
     private Object register(Request req, Response res) throws DataAccessException {
         RegisterRequest registerRequest = new Gson().fromJson(req.body(), RegisterRequest.class);
-        RegisterResult registerResult = this.userService.register(registerRequest);
+        RegisterResult registerResult = this.service.register(registerRequest);
         return new Gson().toJson(registerResult);
     }
 
     private Object login(Request req, Response res) throws DataAccessException {
         LoginRequest loginRequest = new Gson().fromJson(req.body(), LoginRequest.class);
-        LoginResult loginResult = this.userService.login(loginRequest);
+        LoginResult loginResult = this.service.login(loginRequest);
         return new Gson().toJson(loginResult);
     }
 
     private Object logout(Request req, Response res) throws DataAccessException {
         LogoutRequest logoutRequest = new Gson().fromJson(req.body(), LogoutRequest.class);
-        this.userService.logout(logoutRequest);
+        this.service.logout(logoutRequest);
         return new Gson().toJson("");
     }
 
-    private Object listGames(Request req, Response res) {
+    private Object listGames(Request req, Response res) throws DataAccessException {
         ListRequest listRequest = new Gson().fromJson(req.body(), ListRequest.class);
-        ListResult listResult = this.gameService.list(listRequest);
+        ListResult listResult = this.service.list(listRequest);
         return new Gson().toJson(listResult);
     }
 
-    private Object createGame(Request req, Response res) {
+    private Object createGame(Request req, Response res) throws DataAccessException {
         CreateRequest createRequest = new Gson().fromJson(req.body(), CreateRequest.class);
-        CreateResult createResult = this.gameService.create(createRequest);
+        CreateResult createResult = this.service.create(createRequest);
         return new Gson().toJson(createResult);
     }
 
-    private Object joinGame(Request req, Response res) {
+    private Object joinGame(Request req, Response res) throws DataAccessException {
         JoinRequest joinRequest = new Gson().fromJson(req.body(), JoinRequest.class);
-        this.gameService.join(joinRequest);
+        this.service.join(joinRequest);
         return new Gson().toJson("");
     }
 
     private Object clear(Request req, Response res) {
-        this.userService.clear();
-        this.gameService.clear();
+        this.service.clear();
         return new Gson().toJson("");
     }
 }

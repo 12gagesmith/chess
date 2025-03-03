@@ -1,20 +1,25 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.*;
 import model.AuthData;
 import model.UserData;
 import service.records.*;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-public class UserService {
+public class Service {
 
     private final UserDAO userDAO;
     private final AuthDAO authDAO;
+    private final GameDAO gameDAO;
 
-    public UserService() {
+    public Service() {
         this.userDAO = new MemoryUserDAO();
         this.authDAO = new MemoryAuthDAO();
+        this.gameDAO = new MemoryGameDAO();
     }
 
     public RegisterResult register(RegisterRequest registerRequest) throws DataAccessException {
@@ -38,16 +43,46 @@ public class UserService {
         return new LoginResult(userData.username(), authData.authToken());
     }
 
-    public void logout(LogoutRequest logoutRequest) throws DataAccessException {
-        AuthData authData = this.authDAO.getAuth(logoutRequest.authToken());
+    private void authenticate(String authToken) throws DataAccessException {
+        AuthData authData = this.authDAO.getAuth(authToken);
         if (authData == null) {
             throw new DataAccessException("Error: unauthorized");
         }
+    }
+
+    public void logout(LogoutRequest logoutRequest) throws DataAccessException {
+        authenticate(logoutRequest.authToken());
         this.authDAO.deleteAuth(logoutRequest.authToken());
+    }
+
+    public ListResult list(ListRequest listRequest) throws DataAccessException {
+        authenticate(listRequest.authToken());
+        ArrayList<Map> gameList = this.gameDAO.listGames();
+        return new ListResult(gameList);
+    }
+
+    public CreateResult create(CreateRequest createRequest) throws DataAccessException {
+        authenticate(createRequest.authToken());
+        Map game = this.gameDAO.createGame(createRequest.gameName());
+        return new CreateResult(game.gameID);
+    }
+
+    private Map modifyGame(Map game, String username, ChessGame.TeamColor playerColor) throws DataAccessException {
+        //update the game with the new player and color
+        return null;
+    }
+
+    public void join(JoinRequest joinRequest) throws DataAccessException {
+        authenticate(joinRequest.authToken());
+        Map game = this.gameDAO.getGame(joinRequest.gameID());
+        UserData userData = this.userDAO.getUserByAuth(joinRequest.authToken());
+        game = modifyGame(game, userData.username(), joinRequest.playerColor());
+        this.gameDAO.updateGame(game, joinRequest.gameID());
     }
 
     public void clear() {
         this.userDAO.clear();
         this.authDAO.clear();
+        this.gameDAO.clear();
     }
 }
