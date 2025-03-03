@@ -29,4 +29,9 @@ public class MemoryUserDAO implements UserDAO{
         String authToken = UUID.randomUUID().toString();
         return new AuthData(authToken, userData.username());
     }
+
+    @Override
+    public void clear() {
+
+    }
 }

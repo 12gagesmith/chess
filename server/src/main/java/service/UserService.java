@@ -5,6 +5,7 @@ import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryUserDAO;
 import model.AuthData;
 import model.UserData;
+import service.records.*;
 
 public class UserService {
 
@@ -32,5 +33,8 @@ public class UserService {
     }
 
     public void logout(LogoutRequest logoutRequest) {
+    }
+
+    public void clear() {
     }
 }

@@ -2,19 +2,18 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
-import service.RegisterRequest;
-import service.RegisterResult;
-import service.UserService;
+import service.*;
+import service.records.*;
 import spark.*;
-
-import java.util.Map;
 
 public class Server {
 
     private final UserService userService;
+    private final GameService gameService;
 
     public Server() {
         this.userService = new UserService();
+        this.gameService = new GameService();
     }
 
     public int run(int desiredPort) {
@@ -50,26 +49,38 @@ public class Server {
     }
 
     private Object login(Request req, Response res) {
-        return null;
+        LoginRequest loginRequest = new Gson().fromJson(req.body(), LoginRequest.class);
+        LoginResult loginResult = this.userService.login(loginRequest);
+        return new Gson().toJson(loginResult);
     }
 
     private Object logout(Request req, Response res) {
-        return null;
+        LogoutRequest logoutRequest = new Gson().fromJson(req.body(), LogoutRequest.class);
+        this.userService.logout(logoutRequest);
+        return new Gson().toJson("");
     }
 
     private Object listGames(Request req, Response res) {
-        return null;
+        ListRequest listRequest = new Gson().fromJson(req.body(), ListRequest.class);
+        ListResult listResult = this.gameService.list(listRequest);
+        return new Gson().toJson(listResult);
     }
 
     private Object createGame(Request req, Response res) {
-        return null;
+        CreateRequest createRequest = new Gson().fromJson(req.body(), CreateRequest.class);
+        CreateResult createResult = this.gameService.create(createRequest);
+        return new Gson().toJson(createResult);
     }
 
     private Object joinGame(Request req, Response res) {
-        return null;
+        JoinRequest joinRequest = new Gson().fromJson(req.body(), JoinRequest.class);
+        this.gameService.join(joinRequest);
+        return new Gson().toJson("");
     }
 
     private Object clear(Request req, Response res) {
-        return null;
+        this.userService.clear();
+        this.gameService.clear();
+        return new Gson().toJson("");
     }
 }
