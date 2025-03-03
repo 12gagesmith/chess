@@ -48,13 +48,13 @@ public class Server {
         return new Gson().toJson(registerResult);
     }
 
-    private Object login(Request req, Response res) {
+    private Object login(Request req, Response res) throws DataAccessException {
         LoginRequest loginRequest = new Gson().fromJson(req.body(), LoginRequest.class);
         LoginResult loginResult = this.userService.login(loginRequest);
         return new Gson().toJson(loginResult);
     }
 
-    private Object logout(Request req, Response res) {
+    private Object logout(Request req, Response res) throws DataAccessException {
         LogoutRequest logoutRequest = new Gson().fromJson(req.body(), LogoutRequest.class);
         this.userService.logout(logoutRequest);
         return new Gson().toJson("");
