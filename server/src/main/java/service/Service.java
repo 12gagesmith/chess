@@ -54,7 +54,7 @@ public class Service {
 
     public ListResult list(ListRequest listRequest) throws DataAccessException {
         authenticate(listRequest.authToken());
-        ArrayList<GameData> gameList = this.gameDAO.listGames();
+        ArrayList<GameList> gameList = this.gameDAO.listGames();
         return new ListResult(gameList);
     }
 

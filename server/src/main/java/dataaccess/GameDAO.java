@@ -1,14 +1,13 @@
 package dataaccess;
 
 import java.util.ArrayList;
-
-import chess.ChessGame;
 import model.GameData;
+import service.records.GameList;
 
 public interface GameDAO {
-    ArrayList<GameData> listGames();
+    ArrayList<GameList> listGames();
     GameData createGame(String gameName);
-    GameData getGame(Integer gameID);
-    void updateGame(GameData gameData, Integer gameID);
+    GameData getGame(Integer gameID) throws DataAccessException;
+    void updateGame(GameData gameData, Integer gameID) throws DataAccessException;
     void clear();
 }

@@ -1,7 +1,6 @@
 package service.records;
 
-import model.GameData;
 import java.util.ArrayList;
 
-public record ListResult(ArrayList<GameData> games) {
+public record ListResult(ArrayList<GameList> games) {
 }
