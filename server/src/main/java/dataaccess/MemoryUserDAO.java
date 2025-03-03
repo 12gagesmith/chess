@@ -14,7 +14,7 @@ public class MemoryUserDAO implements UserDAO{
     }
 
     @Override
-    public UserData getUser(String username) throws DataAccessException {
+    public UserData getUser(String username) {
         for (UserData usersData : userDB) {
             if (usersData.username().equals(username)) {
                 return usersData;
@@ -32,6 +32,8 @@ public class MemoryUserDAO implements UserDAO{
 
     @Override
     public void clear() {
-
+        for (UserData usersData : userDB) {
+            userDB.remove(usersData);
+        }
     }
 }
