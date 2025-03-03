@@ -1,7 +1,7 @@
 package dataaccess;
 
 import java.util.ArrayList;
-import service.records.Game;
+import service.Game;
 
 public interface GameDAO {
     ArrayList<Game> listGames();

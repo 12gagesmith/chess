@@ -1,6 +1,6 @@
 package dataaccess;
 
-import service.records.Game;
+import service.Game;
 import java.util.ArrayList;
 
 public class MemoryGameDAO implements GameDAO{

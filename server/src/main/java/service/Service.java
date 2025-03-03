@@ -63,19 +63,34 @@ public class Service {
     public CreateResult create(CreateRequest createRequest) throws DataAccessException {
         authenticate(createRequest.authToken());
         Game game = this.gameDAO.createGame(createRequest.gameName());
-        return new CreateResult(game.gameID());
+        return new CreateResult(game.getGameID());
     }
 
-    private Game modifyGame(Game game, String username, ChessGame.TeamColor playerColor) throws DataAccessException {
+    private void modifyGame(Game game, String username, ChessGame.TeamColor playerColor) throws DataAccessException {
         //update the game with the new player and color
-        return null;
+        switch (playerColor) {
+            case WHITE -> {
+                if (game.getWhiteUsername() == null) {
+                    game.setWhiteUsername(username);
+                } else {
+                    throw new DataAccessException("Error: color already taken");
+                }
+            }
+            case BLACK -> {
+                if (game.getBlackUsername() == null) {
+                    game.setBlackUsername(username);
+                } else {
+                    throw new DataAccessException("Error: color already taken");
+                }
+            }
+        }
     }
 
     public void join(JoinRequest joinRequest) throws DataAccessException {
         authenticate(joinRequest.authToken());
         Game game = this.gameDAO.getGame(joinRequest.gameID());
-        UserData userData = this.userDAO.getUserByAuth(joinRequest.authToken());
-        game = modifyGame(game, userData.username(), joinRequest.playerColor());
+        UserData userData = this.userDAO.getUser(this.authDAO.getAuth(joinRequest.authToken()).username());
+        modifyGame(game, userData.username(), joinRequest.playerColor());
         this.gameDAO.updateGame(game, joinRequest.gameID());
     }
 

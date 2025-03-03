@@ -24,11 +24,6 @@ public class MemoryUserDAO implements UserDAO{
     }
 
     @Override
-    public UserData getUserByAuth(String authToken) {
-        return null;
-    }
-
-    @Override
     public AuthData createUser(UserData userData) {
         userDB.add(userData);
         String authToken = UUID.randomUUID().toString();
