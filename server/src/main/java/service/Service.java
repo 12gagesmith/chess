@@ -6,7 +6,6 @@ import model.AuthData;
 import model.UserData;
 import service.records.*;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -57,24 +56,24 @@ public class Service {
 
     public ListResult list(ListRequest listRequest) throws DataAccessException {
         authenticate(listRequest.authToken());
-        ArrayList<Map> gameList = this.gameDAO.listGames();
+        ArrayList<Game> gameList = this.gameDAO.listGames();
         return new ListResult(gameList);
     }
 
     public CreateResult create(CreateRequest createRequest) throws DataAccessException {
         authenticate(createRequest.authToken());
-        Map game = this.gameDAO.createGame(createRequest.gameName());
-        return new CreateResult(game.gameID);
+        Game game = this.gameDAO.createGame(createRequest.gameName());
+        return new CreateResult(game.gameID());
     }
 
-    private Map modifyGame(Map game, String username, ChessGame.TeamColor playerColor) throws DataAccessException {
+    private Game modifyGame(Game game, String username, ChessGame.TeamColor playerColor) throws DataAccessException {
         //update the game with the new player and color
         return null;
     }
 
     public void join(JoinRequest joinRequest) throws DataAccessException {
         authenticate(joinRequest.authToken());
-        Map game = this.gameDAO.getGame(joinRequest.gameID());
+        Game game = this.gameDAO.getGame(joinRequest.gameID());
         UserData userData = this.userDAO.getUserByAuth(joinRequest.authToken());
         game = modifyGame(game, userData.username(), joinRequest.playerColor());
         this.gameDAO.updateGame(game, joinRequest.gameID());

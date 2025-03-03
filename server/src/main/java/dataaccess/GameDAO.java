@@ -1,12 +1,12 @@
 package dataaccess;
 
 import java.util.ArrayList;
-import java.util.Map;
+import service.records.Game;
 
 public interface GameDAO {
-    ArrayList<Map> listGames();
-    Map createGame(String gameName);
-    Map getGame(String gameID);
-    void updateGame(Map game, String gameID);
+    ArrayList<Game> listGames();
+    Game createGame(String gameName);
+    Game getGame(String gameID);
+    void updateGame(Game game, String gameID);
     void clear();
 }

@@ -1,26 +1,27 @@
 package dataaccess;
 
+import service.records.Game;
 import java.util.ArrayList;
-import java.util.Map;
 
 public class MemoryGameDAO implements GameDAO{
     @Override
-    public ArrayList<Map> listGames() {
+    public ArrayList<Game> listGames() {
         return null;
     }
 
     @Override
-    public Map createGame(String gameName) {
-        return Map.of();
+    public Game createGame(String gameName) {
+        return null;
     }
 
     @Override
-    public Map getGame(String gameID) {
-        return Map.of();
+    public Game getGame(String gameID) {
+        return null;
     }
 
     @Override
-    public void updateGame(Map game, String gameID) {
+    public void updateGame(Game game, String gameID) {
+
     }
 
     @Override
