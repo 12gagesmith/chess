@@ -35,10 +35,10 @@ public class MoveCalculator {
     public static void knightCalculator(ChessBoard board, ChessPosition myPosition, ArrayList<ChessMove> moves) {
         ChessPosition nextPosition;
         int[] indexes = new int[] {-2, -1, 1, 2};
-        for (int row_i : indexes) {
-            for (int col_i : indexes) {
-                if (Math.abs(row_i) != Math.abs(col_i)) {
-                    nextPosition = new ChessPosition(myPosition.getRow() - row_i, myPosition.getColumn() + col_i);
+        for (int iRow : indexes) {
+            for (int iCol : indexes) {
+                if (Math.abs(iRow) != Math.abs(iCol)) {
+                    nextPosition = new ChessPosition(myPosition.getRow() - iRow, myPosition.getColumn() + iCol);
                     if (isSquareOpen(board, myPosition, nextPosition)) { moves.add(new ChessMove(myPosition, nextPosition, null)); }
                 }
             }
@@ -87,7 +87,8 @@ public class MoveCalculator {
         }
     }
 
-    private static void pawnCalculator(ChessBoard board, ChessPosition myPosition, ArrayList<ChessMove> moves, int proRow, int startRow, int direction) {
+    private static void pawnCalculator(ChessBoard board, ChessPosition myPosition, ArrayList<ChessMove> moves,
+                                       int proRow, int startRow, int direction) {
         ChessPosition nextPosition = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn());
         if (isSquareOpen(board, myPosition, nextPosition)) { checkPromotion(myPosition, nextPosition, moves, proRow); }
         if (myPosition.getRow() == startRow && board.getPiece(nextPosition) == null) {
@@ -96,7 +97,8 @@ public class MoveCalculator {
         }
         for (int i = -1; i <= 1; i+=2) {
             nextPosition = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn() + i);
-            if (inBounds(nextPosition) && canCapture(board.getPiece(myPosition), board.getPiece(nextPosition))) { checkPromotion(myPosition, nextPosition, moves, proRow); }
+            if (inBounds(nextPosition) && canCapture(board.getPiece(myPosition), board.getPiece(nextPosition))) {
+                checkPromotion(myPosition, nextPosition, moves, proRow); }
         }
     }
 

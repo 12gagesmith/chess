@@ -1,6 +1,7 @@
 package service;
 
 import chess.ChessGame;
+import com.google.gson.Gson;
 import dataaccess.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,6 +41,9 @@ public class TestService {
         RegisterResult expected = new RegisterResult("gage2", "authToken");
         Assertions.assertEquals(actual.username(), expected.username());
         Assertions.assertThrows(DataAccessException.class, () -> service.register(new RegisterRequest("gage", "smith", "myEmail")));
+        Assertions.assertThrows(DataAccessException.class, () -> service.register(new RegisterRequest(null, null, null)));
+        Assertions.assertThrows(DataAccessException.class, () -> service.register(new RegisterRequest("gage", null, null)));
+        Assertions.assertThrows(DataAccessException.class, () -> service.register(new RegisterRequest("gage", "smith", null)));
     }
 
     @Test
@@ -47,6 +51,7 @@ public class TestService {
         LoginResult actual = service.login(new LoginRequest("gage", "smith"));
         LoginResult expected = new LoginResult("gage", "authToken");
         Assertions.assertEquals(actual.username(), expected.username());
+        Assertions.assertThrows(DataAccessException.class, () -> service.login(new LoginRequest("gage", "gage")));
         Assertions.assertThrows(DataAccessException.class, () -> service.login(new LoginRequest("smith", "gage")));
     }
 
@@ -74,7 +79,11 @@ public class TestService {
     public void testJoin() throws DataAccessException {
         int gameID = service.create(new CreateRequest("gageGame"), this.authToken).gameID();
         Assertions.assertDoesNotThrow(() -> service.join(new JoinRequest(ChessGame.TeamColor.BLACK, gameID), this.authToken));
+        service.join(new JoinRequest(ChessGame.TeamColor.WHITE, gameID), this.authToken);
         Assertions.assertThrows(DataAccessException.class, () -> service.join(new JoinRequest(ChessGame.TeamColor.BLACK, gameID), this.authToken));
+        Assertions.assertThrows(DataAccessException.class, () -> service.join(new JoinRequest(ChessGame.TeamColor.WHITE, gameID), this.authToken));
+        Assertions.assertThrows(DataAccessException.class, () -> service.join(new JoinRequest(null, null), this.authToken));
+        Assertions.assertThrows(DataAccessException.class, () -> service.join(new JoinRequest(ChessGame.TeamColor.BLACK, null), this.authToken));
     }
 
     @Test

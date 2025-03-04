@@ -51,17 +51,17 @@ public class ChessGame {
         ChessPiece myPiece = myBoard.getPiece(startPosition);
         if (myPiece == null) {return null;}
         Collection<ChessMove> moves = myPiece.pieceMoves(myBoard, startPosition);
-        ArrayList<ChessMove> moves_to_remove = new ArrayList<>();
+        ArrayList<ChessMove> movesToRemove = new ArrayList<>();
         for (ChessMove move : moves) {
             ChessBoard tempBoard = myBoard.clone();
             myBoard.addPiece(move.getEndPosition(), myPiece);
             myBoard.addPiece(move.getStartPosition(), null);
             if (isInCheck(myPiece.getTeamColor())) {
-                moves_to_remove.add(move);
+                movesToRemove.add(move);
             }
             setBoard(tempBoard);
         }
-        for (ChessMove move : moves_to_remove) {
+        for (ChessMove move : movesToRemove) {
             moves.remove(move);
         }
         return moves;
@@ -123,12 +123,13 @@ public class ChessGame {
             for (int j = 1; j <= 8; j++) {
                 currPosition = new ChessPosition(i, j);
                 currPiece = myBoard.getPiece(currPosition);
-                if (currPiece != null && currPiece.getTeamColor() != teamColor) {
-                    Collection<ChessMove> moves = currPiece.pieceMoves(myBoard, currPosition);
-                    for (ChessMove move : moves) {
-                        if (move.getEndPosition().equals(kingPosition)) {
-                            return true;
-                        }
+                if (currPiece == null || currPiece.getTeamColor() == teamColor) {
+                    continue;
+                }
+                Collection<ChessMove> moves = currPiece.pieceMoves(myBoard, currPosition);
+                for (ChessMove move : moves) {
+                    if (move.getEndPosition().equals(kingPosition)) {
+                        return true;
                     }
                 }
             }

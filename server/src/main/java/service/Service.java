@@ -89,7 +89,6 @@ public class Service {
                     throw new DataAccessException(403, "Error: color already taken");
                 }
             }
-            default -> throw new DataAccessException(500, "Error: invalid color");
         }
         return new GameData(gameData.gameID(), whiteUsername, blackUsername, gameData.gameName(), gameData.game());
     }

@@ -9,6 +9,7 @@ import java.util.Random;
 public class MemoryGameDAO implements GameDAO{
 
     private final ArrayList<GameData> gameDB;
+    private int nextID = 1;
 
     public MemoryGameDAO() {
         this.gameDB = new ArrayList<>();
@@ -25,20 +26,7 @@ public class MemoryGameDAO implements GameDAO{
 
     @Override
     public GameData createGame(String gameName) {
-        // Generating a unique gameID
-        int gameID = 0;
-        Random random = new Random();
-        boolean duplicated = true;
-        while (duplicated) {
-            duplicated = false;
-            gameID = random.nextInt(10000);
-            for (GameData gameData : gameDB) {
-                if (gameData.gameID() == gameID) {
-                    duplicated = true;
-                    break;
-                }
-            }
-        }
+        int gameID = nextID++;
         GameData gameData = new GameData(gameID, null, null, gameName, new ChessGame());
         this.gameDB.add(gameData);
         return gameData;
