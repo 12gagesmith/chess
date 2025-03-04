@@ -1,12 +1,8 @@
 package service;
 
 import chess.ChessGame;
-import com.google.gson.Gson;
 import dataaccess.*;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import service.records.*;
 
 import java.util.ArrayList;
@@ -84,11 +80,13 @@ public class TestService {
         Assertions.assertThrows(DataAccessException.class, () -> service.join(new JoinRequest(ChessGame.TeamColor.WHITE, gameID), this.authToken));
         Assertions.assertThrows(DataAccessException.class, () -> service.join(new JoinRequest(null, null), this.authToken));
         Assertions.assertThrows(DataAccessException.class, () -> service.join(new JoinRequest(ChessGame.TeamColor.BLACK, null), this.authToken));
+        Assertions.assertThrows(DataAccessException.class, () -> service.join(new JoinRequest(ChessGame.TeamColor.BLACK, 9999), this.authToken));
     }
 
     @Test
     public void testClear() throws DataAccessException {
         service.create(new CreateRequest("gageGame"), this.authToken);
+        Assertions.assertDoesNotThrow(() -> service.clear());
         Assertions.assertDoesNotThrow(() -> service.clear());
         Assertions.assertDoesNotThrow(() -> service.register(new RegisterRequest("gage", "smith", "myEmail")));
     }
