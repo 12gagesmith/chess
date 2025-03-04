@@ -13,13 +13,16 @@ public class Service {
     private final AuthDAO authDAO;
     private final GameDAO gameDAO;
 
-    public Service() {
-        this.userDAO = new MemoryUserDAO();
-        this.authDAO = new MemoryAuthDAO();
-        this.gameDAO = new MemoryGameDAO();
+    public Service(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
+        this.userDAO = userDAO;
+        this.authDAO = authDAO;
+        this.gameDAO = gameDAO;
     }
 
     public RegisterResult register(RegisterRequest registerRequest) throws DataAccessException {
+        if (registerRequest.username() == null || registerRequest.password() == null || registerRequest.email() == null) {
+            throw new DataAccessException(400, "Error: bad request");
+        }
         UserData userData = this.userDAO.getUser(registerRequest.username());
         if (userData != null) {
             throw new DataAccessException(403, "Error: username already taken");
@@ -60,6 +63,9 @@ public class Service {
 
     public CreateResult create(CreateRequest createRequest, String authToken) throws DataAccessException {
         authenticate(authToken);
+        if (createRequest.gameName() == null) {
+            throw new DataAccessException(400, "Error: bad request");
+        }
         GameData gameData = this.gameDAO.createGame(createRequest.gameName());
         return new CreateResult(gameData.gameID());
     }
@@ -83,12 +89,16 @@ public class Service {
                     throw new DataAccessException(403, "Error: color already taken");
                 }
             }
+            default -> throw new DataAccessException(500, "Error: invalid color");
         }
         return new GameData(gameData.gameID(), whiteUsername, blackUsername, gameData.gameName(), gameData.game());
     }
 
     public void join(JoinRequest joinRequest, String authToken) throws DataAccessException {
         authenticate(authToken);
+        if (joinRequest.playerColor() == null || joinRequest.gameID() == null) {
+            throw new DataAccessException(400, "Error: bad request");
+        }
         GameData gameData = this.gameDAO.getGame(joinRequest.gameID());
         UserData userData = this.userDAO.getUser(this.authDAO.getAuth(authToken).username());
         GameData newGameData = modifyGame(gameData, userData.username(), joinRequest.playerColor());

@@ -1,7 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
-import dataaccess.DataAccessException;
+import dataaccess.*;
 import service.Service;
 import service.records.*;
 import spark.*;
@@ -11,7 +11,10 @@ public class Server {
     private final Service service;
 
     public Server() {
-        this.service = new Service();
+        UserDAO userDAO = new MemoryUserDAO();
+        AuthDAO authDAO = new MemoryAuthDAO();
+        GameDAO gameDAO = new MemoryGameDAO();
+        this.service = new Service(userDAO, authDAO, gameDAO);
     }
 
     public int run(int desiredPort) {

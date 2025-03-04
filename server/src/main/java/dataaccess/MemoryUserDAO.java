@@ -32,8 +32,9 @@ public class MemoryUserDAO implements UserDAO{
 
     @Override
     public void clear() {
-        for (UserData usersData : userDB) {
-            userDB.remove(usersData);
+        int numUsers = userDB.size();
+        if (numUsers > 0) {
+            userDB.subList(0, numUsers).clear();
         }
     }
 }

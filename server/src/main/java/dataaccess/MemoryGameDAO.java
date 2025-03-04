@@ -63,8 +63,9 @@ public class MemoryGameDAO implements GameDAO{
 
     @Override
     public void clear() {
-        for (GameData gameData : gameDB) {
-            gameDB.remove(gameData);
+        int numGames = gameDB.size();
+        if (numGames > 0) {
+            gameDB.subList(0, numGames).clear();
         }
     }
 }

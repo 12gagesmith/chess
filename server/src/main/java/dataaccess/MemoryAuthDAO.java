@@ -33,8 +33,9 @@ public class MemoryAuthDAO implements AuthDAO{
 
     @Override
     public void clear() {
-        for (AuthData authData : authDB) {
-            authDB.remove(authData);
+        int numAuths = authDB.size();
+        if (numAuths > 0) {
+            authDB.subList(0, numAuths).clear();
         }
     }
 }
