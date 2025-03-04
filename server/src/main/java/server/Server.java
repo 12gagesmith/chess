@@ -46,7 +46,8 @@ public class Server {
 
     private void exceptionHandler(DataAccessException ex, Request req, Response res) {
         res.status(ex.getStatusCode());
-        res.body(new Gson().toJson(ex.getMessage()));
+        ErrorMessage errorMessage = new ErrorMessage(ex.getMessage());
+        res.body(new Gson().toJson(errorMessage));
     }
 
     private Object register(Request req, Response res) throws DataAccessException {
