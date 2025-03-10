@@ -11,10 +11,14 @@ public class Server {
     private final Service service;
 
     public Server() {
-        UserDAO userDAO = new MySqlUserDAO();
-        AuthDAO authDAO = new MySqlAuthDAO();
-        GameDAO gameDAO = new MySqlGameDAO();
-        this.service = new Service(userDAO, authDAO, gameDAO);
+        try {
+            UserDAO userDAO = new MySqlUserDAO();
+            AuthDAO authDAO = new MySqlAuthDAO();
+            GameDAO gameDAO = new MySqlGameDAO();
+            this.service = new Service(userDAO, authDAO, gameDAO);
+        } catch (DataAccessException ex) {
+            throw new RuntimeException(String.format("Unable to start server: %s%n", ex.getMessage()));
+        }
     }
 
     public int run(int desiredPort) {
