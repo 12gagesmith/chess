@@ -105,8 +105,8 @@ public class Service {
     }
 
     public void clear() {
-        this.userDAO.clear();
-        this.authDAO.clear();
-        this.gameDAO.clear();
+        this.userDAO.clearUsers();
+        this.authDAO.clearAuth();
+        this.gameDAO.clearGames();
     }
 }
