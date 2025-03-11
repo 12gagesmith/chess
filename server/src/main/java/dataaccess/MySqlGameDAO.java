@@ -9,12 +9,12 @@ public class MySqlGameDAO implements GameDAO{
 
     public MySqlGameDAO() throws DataAccessException {
         String[] createStatements = {"""
-        CREATE TABLE IF NOT EXISTS auth (
-          gameID int NOT NULL,
-          whiteUsername varchar(256) NOT NULL,
-          blackUsername varchar(256) NOT NULL,
-          gameName varchar(256) NOT NULL,
-          gameJSON TEXT DEFAULT NULL,
+        CREATE TABLE IF NOT EXISTS games (
+          `gameID` int NOT NULL,
+          `whiteUsername` varchar(256) DEFAULT NULL,
+          `blackUsername` varchar(256) DEFAULT NULL,
+          `gameName` varchar(256) NOT NULL,
+          `json` TEXT DEFAULT NULL,
           PRIMARY KEY (gameID)
         );
         """

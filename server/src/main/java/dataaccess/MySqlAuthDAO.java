@@ -7,8 +7,9 @@ public class MySqlAuthDAO implements AuthDAO{
     public MySqlAuthDAO() throws DataAccessException {
         String[] createStatements = {"""
         CREATE TABLE IF NOT EXISTS auth (
-          authToken varchar(256) NOT NULL,
-          username varchar(256) NOT NULL,
+          `authToken` varchar(256) NOT NULL,
+          `username` varchar(256) NOT NULL,
+          `json` TEXT DEFAULT NULL,
           PRIMARY KEY (authToken)
         );
         """
