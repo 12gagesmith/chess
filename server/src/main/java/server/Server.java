@@ -90,7 +90,7 @@ public class Server {
         return "{}";
     }
 
-    private Object clear(Request req, Response res) {
+    private Object clear(Request req, Response res) throws DataAccessException {
         this.service.clear();
         return "{}";
     }

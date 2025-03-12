@@ -3,6 +3,7 @@ package service;
 import chess.ChessGame;
 import dataaccess.*;
 import model.*;
+import org.mindrot.jbcrypt.BCrypt;
 import service.records.*;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -27,7 +28,8 @@ public class Service {
         if (userData != null) {
             throw new DataAccessException(403, "Error: username already taken");
         }
-        userData = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
+        String hashedPassword = BCrypt.hashpw(registerRequest.password(), BCrypt.gensalt());
+        userData = new UserData(registerRequest.username(), hashedPassword, registerRequest.email());
         AuthData authData = this.userDAO.createUser(userData);
         this.authDAO.createAuth(authData);
         return new RegisterResult(userData.username(), authData.authToken());
@@ -35,7 +37,8 @@ public class Service {
 
     public LoginResult login(LoginRequest loginRequest) throws DataAccessException {
         UserData userData = this.userDAO.getUser(loginRequest.username());
-        if (userData == null || !loginRequest.password().equals(userData.password())) {
+        String hashedPassword = BCrypt.hashpw(loginRequest.password(), BCrypt.gensalt());
+        if (userData == null || !hashedPassword.equals(userData.password())) {
             throw new DataAccessException(401, "Error: invalid username or password");
         }
         AuthData authData = new AuthData(UUID.randomUUID().toString(), userData.username());
@@ -104,7 +107,7 @@ public class Service {
         this.gameDAO.updateGame(newGameData, joinRequest.gameID());
     }
 
-    public void clear() {
+    public void clear() throws DataAccessException {
         this.userDAO.clearUsers();
         this.authDAO.clearAuth();
         this.gameDAO.clearGames();
