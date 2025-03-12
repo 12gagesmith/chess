@@ -37,8 +37,7 @@ public class Service {
 
     public LoginResult login(LoginRequest loginRequest) throws DataAccessException {
         UserData userData = this.userDAO.getUser(loginRequest.username());
-        String hashedPassword = BCrypt.hashpw(loginRequest.password(), BCrypt.gensalt());
-        if (userData == null || !hashedPassword.equals(userData.password())) {
+        if (userData == null || !BCrypt.checkpw(loginRequest.password(), userData.password())) {
             throw new DataAccessException(401, "Error: invalid username or password");
         }
         AuthData authData = new AuthData(UUID.randomUUID().toString(), userData.username());
