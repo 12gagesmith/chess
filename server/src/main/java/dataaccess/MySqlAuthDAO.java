@@ -55,6 +55,9 @@ public class MySqlAuthDAO implements AuthDAO{
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
         String statement = "DELETE FROM auth WHERE authToken=?";
+        if (getAuth(authToken) == null) {
+            throw new DataAccessException(401, "Error: unauthorized");
+        }
         DatabaseManager.executeUpdate(statement, authToken);
     }
 

@@ -17,10 +17,10 @@ public class TestService {
     }
 
     @BeforeAll
-    public static void init() throws DataAccessException {
-        UserDAO userDAO = new MySqlUserDAO();
-        AuthDAO authDAO = new MySqlAuthDAO();
-        GameDAO gameDAO = new MySqlGameDAO();
+    public static void init() {
+        UserDAO userDAO = new MemoryUserDAO();
+        AuthDAO authDAO = new MemoryAuthDAO();
+        GameDAO gameDAO = new MemoryGameDAO();
         service = new Service(userDAO, authDAO, gameDAO);
     }
 
