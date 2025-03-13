@@ -18,17 +18,21 @@ public class TestService {
 
     @BeforeAll
     public static void init() throws DataAccessException {
-        UserDAO userDAO = new MemoryUserDAO();
-        AuthDAO authDAO = new MemoryAuthDAO();
-        GameDAO gameDAO = new MemoryGameDAO();
+        UserDAO userDAO = new MySqlUserDAO();
+        AuthDAO authDAO = new MySqlAuthDAO();
+        GameDAO gameDAO = new MySqlGameDAO();
         service = new Service(userDAO, authDAO, gameDAO);
-        service.register(new RegisterRequest("gage", "smith", "myEmail"));
     }
 
     @BeforeEach
     public void setup() throws DataAccessException {
-        LoginResult loginResult = service.login(new LoginRequest("gage", "smith"));
-        this.authToken = loginResult.authToken();
+        RegisterResult registerResult = service.register(new RegisterRequest("gage", "smith", "myEmail"));
+        this.authToken = registerResult.authToken();
+    }
+
+    @AfterEach
+    public void clearOut() throws DataAccessException {
+        service.clear();
     }
 
     @Test
