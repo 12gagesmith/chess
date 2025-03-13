@@ -16,7 +16,7 @@ public class MySqlGameDAO implements GameDAO{
     public MySqlGameDAO() throws DataAccessException {
         String[] createStatements = {"""
         CREATE TABLE IF NOT EXISTS games (
-          `gameID` int NOT NULL,
+          `gameID` int NOT NULL AUTO_INCREMENT,
           `whiteUsername` varchar(256) DEFAULT NULL,
           `blackUsername` varchar(256) DEFAULT NULL,
           `gameName` varchar(256) NOT NULL,
@@ -29,29 +29,48 @@ public class MySqlGameDAO implements GameDAO{
     }
 
     @Override
-    public ArrayList<GameList> listGames() {
-        return null;
+    public ArrayList<GameList> listGames() throws DataAccessException {
+        ArrayList<GameList> listOfGames = new ArrayList<>();
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM games";
+            try (var ps = conn.prepareStatement(statement)) {
+                try (var rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        GameData gameData = readGame(rs);
+                        listOfGames.add(new GameList(gameData.gameID(), gameData.whiteUsername(),
+                                gameData.blackUsername(), gameData.gameName()));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(500, String.format("Unable to read data: %s", e.getMessage()));
+        }
+        return listOfGames;
     }
 
     @Override
-    public GameData createGame(String gameName) {
-        return null;
+    public GameData createGame(String gameName) throws DataAccessException {
+        String statement = "INSERT INTO games (whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?)";
+        ChessGame game = new ChessGame();
+        String json = new Gson().toJson(game);
+        int gameID = DatabaseManager.executeUpdate(statement, null, null, gameName, json);
+        return new GameData(gameID, null, null, gameName, game);
     }
 
     private GameData readGame(ResultSet rs) throws SQLException {
-        String json = rs.getString("game");
-        ChessGame game = new Gson().fromJson(json, ChessGame.class);
         int gameID = rs.getInt("gameID");
         String whiteUsername = rs.getString("whiteUsername");
         String blackUsername = rs.getString("blackUsername");
         String gameName = rs.getString("gameName");
+        String json = rs.getString("game");
+        ChessGame game = new Gson().fromJson(json, ChessGame.class);
         return new GameData(gameID, whiteUsername, blackUsername, gameName, game);
     }
 
     @Override
     public GameData getGame(Integer gameID) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
-            String statement = "SELECT gameID, json FROM games WHERE gameID=?";
+            String statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM games WHERE gameID=?";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 ps.setInt(1, gameID);
                 try (ResultSet rs = ps.executeQuery()) {

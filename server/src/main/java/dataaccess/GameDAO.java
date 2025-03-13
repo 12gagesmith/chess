@@ -5,8 +5,8 @@ import model.GameData;
 import service.records.GameList;
 
 public interface GameDAO {
-    ArrayList<GameList> listGames();
-    GameData createGame(String gameName);
+    ArrayList<GameList> listGames() throws DataAccessException;
+    GameData createGame(String gameName) throws DataAccessException;
     GameData getGame(Integer gameID) throws DataAccessException;
     void updateGame(GameData gameData, Integer gameID) throws DataAccessException;
     void clearGames() throws DataAccessException;
