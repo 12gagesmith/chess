@@ -101,6 +101,9 @@ public class Service {
             throw new DataAccessException(400, "Error: bad request");
         }
         GameData gameData = this.gameDAO.getGame(joinRequest.gameID());
+        if (gameData == null) {
+            throw new DataAccessException(403, "Error: invalid gameID");
+        }
         UserData userData = this.userDAO.getUser(this.authDAO.getAuth(authToken).username());
         GameData newGameData = modifyGame(gameData, userData.username(), joinRequest.playerColor());
         this.gameDAO.updateGame(newGameData, joinRequest.gameID());
