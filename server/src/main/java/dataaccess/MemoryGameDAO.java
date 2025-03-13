@@ -4,7 +4,6 @@ import chess.ChessGame;
 import model.GameData;
 import service.records.GameList;
 import java.util.ArrayList;
-import java.util.Random;
 
 public class MemoryGameDAO implements GameDAO{
 
