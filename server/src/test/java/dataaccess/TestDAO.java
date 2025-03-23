@@ -3,7 +3,7 @@ package dataaccess;
 import chess.ChessGame;
 import model.*;
 import org.junit.jupiter.api.*;
-import service.records.GameList;
+import server.records.GameList;
 
 import java.util.ArrayList;
 

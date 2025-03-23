@@ -2,7 +2,7 @@ package dataaccess;
 
 import chess.ChessGame;
 import model.GameData;
-import service.records.GameList;
+import server.records.GameList;
 import java.util.ArrayList;
 
 public class MemoryGameDAO implements GameDAO{

@@ -1,4 +1,4 @@
-package service.records;
+package server.records;
 
 public record ListRequest(String authToken) {
 }

@@ -3,7 +3,7 @@ package service;
 import chess.ChessGame;
 import dataaccess.*;
 import org.junit.jupiter.api.*;
-import service.records.*;
+import server.records.*;
 
 import java.util.ArrayList;
 

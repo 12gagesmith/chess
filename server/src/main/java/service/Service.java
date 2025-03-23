@@ -4,7 +4,8 @@ import chess.ChessGame;
 import dataaccess.*;
 import model.*;
 import org.mindrot.jbcrypt.BCrypt;
-import service.records.*;
+import server.records.*;
+
 import java.util.ArrayList;
 import java.util.UUID;
 
