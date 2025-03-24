@@ -1,5 +1,7 @@
 package dataaccess;
 
+import server.DataAccessException;
+
 import java.sql.*;
 import java.util.Properties;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;

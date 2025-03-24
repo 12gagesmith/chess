@@ -2,6 +2,7 @@ package dataaccess;
 
 import java.util.ArrayList;
 import model.GameData;
+import server.DataAccessException;
 import server.records.GameList;
 
 public interface GameDAO {
