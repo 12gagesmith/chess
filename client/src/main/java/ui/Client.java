@@ -2,6 +2,7 @@ package ui;
 
 import server.DataAccessException;
 import server.ServerFacade;
+import server.records.*;
 
 import java.util.Arrays;
 
@@ -19,11 +20,23 @@ public class Client {
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
+                case "quit" -> "quit";
+                case "register" -> register(params);
                 default -> help();
             };
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             return e.getMessage();
         }
+    }
+
+    public String register(String... params) throws DataAccessException {
+        assertState(State.SIGNEDOUT);
+        if (params.length < 3) {
+            throw new DataAccessException(400, "Expected: <USERNAME> <PASSWORD> <EMAIL>");
+        }
+        RegisterRequest registerRequest = server.register(params[0], params[1], params[2]);
+        state = State.SIGNEDIN;
+        return String.format("You registered as %s", registerRequest.username());
     }
 
     public String help() {
@@ -49,6 +62,22 @@ public class Client {
                         help - display possible commands
                         quit - exit the program
                         """;
+            }
+        }
+    }
+
+    private void assertState(State stateCheck) throws DataAccessException {
+        if (!state.equals(stateCheck)) {
+            switch (stateCheck) {
+                case SIGNEDOUT -> {
+                    throw new DataAccessException(400, "You must be signed out to use this command");
+                }
+                case SIGNEDIN -> {
+                    throw new DataAccessException(400, "You must be signed in to use this command");
+                }
+                default -> {
+                    throw new DataAccessException(400, "You must be playing a game to use this command");
+                }
             }
         }
     }

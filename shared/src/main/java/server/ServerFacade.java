@@ -1,6 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
+import server.records.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,9 +17,10 @@ public class ServerFacade {
         serverUrl = url;
     }
 
-    public void register() throws DataAccessException {
+    public RegisterRequest register(String username, String password, String email) throws DataAccessException {
         String path = "/user";
-        this.makeRequest("POST", path, null, null);
+        RegisterRequest registerRequest = new RegisterRequest(username, password, email);
+        return this.makeRequest("POST", path, registerRequest, RegisterRequest.class);
     }
 
     public void login() throws DataAccessException {
