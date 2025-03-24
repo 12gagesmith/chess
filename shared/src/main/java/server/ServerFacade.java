@@ -10,7 +10,7 @@ import java.net.*;
 
 public class ServerFacade {
 
-    private String serverUrl;
+    private final String serverUrl;
 
     public ServerFacade(String url) {
         serverUrl = url;
