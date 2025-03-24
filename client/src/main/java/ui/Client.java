@@ -22,6 +22,12 @@ public class Client {
             return switch (cmd) {
                 case "quit" -> "quit";
                 case "register" -> register(params);
+                case "login" -> login();
+                case "logout" -> logout();
+                case "create" -> create();
+                case "list" -> list();
+                case "join" -> join();
+                case "observe" -> observe();
                 default -> help();
             };
         } catch (DataAccessException e) {
@@ -37,6 +43,36 @@ public class Client {
         RegisterRequest registerRequest = server.register(params[0], params[1], params[2]);
         state = State.SIGNEDIN;
         return String.format("You registered as %s", registerRequest.username());
+    }
+
+    public String login() throws DataAccessException {
+        assertState(State.SIGNEDOUT);
+        return "";
+    }
+
+    public String logout() throws DataAccessException {
+        assertState(State.SIGNEDIN);
+        return "";
+    }
+
+    public String create() throws DataAccessException {
+        assertState(State.SIGNEDIN);
+        return "";
+    }
+
+    public String list() throws DataAccessException {
+        assertState(State.SIGNEDIN);
+        return "";
+    }
+
+    public String join() throws DataAccessException {
+        assertState(State.SIGNEDIN);
+        return "";
+    }
+
+    public String observe() throws DataAccessException {
+        assertState(State.SIGNEDIN);
+        return "";
     }
 
     public String help() {
