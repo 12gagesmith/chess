@@ -17,15 +17,16 @@ public class ServerFacade {
         serverUrl = url;
     }
 
-    public RegisterRequest register(String username, String password, String email) throws DataAccessException {
+    public RegisterResult register(String username, String password, String email) throws DataAccessException {
         String path = "/user";
         RegisterRequest registerRequest = new RegisterRequest(username, password, email);
-        return this.makeRequest("POST", path, registerRequest, RegisterRequest.class);
+        return this.makeRequest("POST", path, registerRequest, RegisterResult.class);
     }
 
-    public void login() throws DataAccessException {
+    public LoginResult login(String username, String password) throws DataAccessException {
         String path = "/session";
-        this.makeRequest("POST", path, null, null);
+        LoginRequest loginRequest = new LoginRequest(username, password);
+        return this.makeRequest("POST", path, loginRequest, LoginResult.class);
     }
 
     public void logout() throws DataAccessException {

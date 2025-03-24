@@ -9,6 +9,7 @@ import java.util.Arrays;
 public class Client {
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
+    private String authToken = "";
 
     public Client(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -22,7 +23,7 @@ public class Client {
             return switch (cmd) {
                 case "quit" -> "quit";
                 case "register" -> register(params);
-                case "login" -> login();
+                case "login" -> login(params);
                 case "logout" -> logout();
                 case "create" -> create();
                 case "list" -> list();
@@ -40,14 +41,21 @@ public class Client {
         if (params.length < 3) {
             throw new DataAccessException(400, "Expected: <USERNAME> <PASSWORD> <EMAIL>");
         }
-        RegisterRequest registerRequest = server.register(params[0], params[1], params[2]);
+        RegisterResult registerResult = server.register(params[0], params[1], params[2]);
         state = State.SIGNEDIN;
-        return String.format("You registered as %s", registerRequest.username());
+        this.authToken = registerResult.authToken();
+        return String.format("You registered as %s", registerResult.username());
     }
 
-    public String login() throws DataAccessException {
+    public String login(String... params) throws DataAccessException {
         assertState(State.SIGNEDOUT);
-        return "";
+        if (params.length < 2) {
+            throw new DataAccessException(400, "Expected: <USERNAME> <PASSWORD>");
+        }
+        LoginResult loginResult = server.login(params[0], params[1]);
+        state = State.SIGNEDIN;
+        this.authToken = loginResult.authToken();
+        return String.format("You are logged in as %s", loginResult.username());
     }
 
     public String logout() throws DataAccessException {
