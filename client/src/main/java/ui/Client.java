@@ -19,7 +19,7 @@ public class Client {
 
     public String eval(String input) {
         try {
-            var tokens = input.toLowerCase().split(" ");
+            var tokens = input.split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
@@ -42,7 +42,7 @@ public class Client {
         if (state == State.SIGNEDIN) {
             logout();
         }
-        return "quit";
+        return SET_TEXT_COLOR_BLUE + "Thanks for playing!" + RESET_TEXT_COLOR;
     }
 
     public String register(String... params) throws DataAccessException {
@@ -89,9 +89,9 @@ public class Client {
     public String list() throws DataAccessException {
         assertState(State.SIGNEDIN);
         ListResult listResult = server.listGames(this.authToken);
-        System.out.println(SET_TEXT_COLOR_BLUE);
+        System.out.println(SET_TEXT_COLOR_YELLOW);
         for (GameList lst: listResult.games()) {
-            System.out.printf("Game ID: %s\nGame Name: %s\nWhite Username: %s\nBlack Username: %s\n",
+            System.out.printf("Game ID: %s\nGame Name: %s\nWhite Username: %s\nBlack Username: %s\n\n",
                     lst.gameID(), lst.gameName(), lst.whiteUsername(), lst.blackUsername());
         }
         return RESET_TEXT_COLOR;
@@ -108,9 +108,10 @@ public class Client {
     }
 
     public String help() {
+        System.out.print(SET_TEXT_COLOR_BLUE);
         switch (state) {
             case State.PLAYING -> {
-                return "TODO: UI during gameplay";
+                return "TODO: UI during gameplay" + RESET_TEXT_COLOR;
             }
             case State.SIGNEDIN -> {
                 return """
@@ -121,7 +122,7 @@ public class Client {
                         observe <ID> - observe a game
                         help - display possible commands
                         quit - exit the program
-                        """;
+                        """ + RESET_TEXT_COLOR;
             }
             default -> {
                 return """
@@ -129,7 +130,7 @@ public class Client {
                         register <USERNAME> <PASSWORD> <EMAIL> - create an account
                         help - display possible commands
                         quit - exit the program
-                        """;
+                        """ + RESET_TEXT_COLOR;
             }
         }
     }

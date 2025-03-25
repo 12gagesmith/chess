@@ -2,6 +2,9 @@ package ui;
 
 import java.util.Scanner;
 
+import static ui.EscapeSequences.RESET_TEXT_COLOR;
+import static ui.EscapeSequences.SET_TEXT_COLOR_BLUE;
+
 public class Repl {
     private final Client client;
 
@@ -12,7 +15,8 @@ public class Repl {
     public void run() {
         Scanner scanner = new Scanner(System.in);
         String result = "";
-        while (!result.equals("quit")) {
+        System.out.print(client.help());
+        while (!result.equals(SET_TEXT_COLOR_BLUE + "Thanks for playing!" + RESET_TEXT_COLOR)) {
             printPrompt();
             String line = scanner.nextLine();
             try {

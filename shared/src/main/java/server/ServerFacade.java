@@ -77,10 +77,12 @@ public class ServerFacade {
             if (request instanceof LogoutRequest || request instanceof ListRequest || request instanceof CreateRequest) {
                 http.addRequestProperty("authorization", authToken);
             }
-            http.addRequestProperty("Content-Type", "application/json");
-            String requestData = new Gson().toJson(request);
-            try (OutputStream requestBody = http.getOutputStream()) {
-                requestBody.write(requestData.getBytes());
+            if (!(request instanceof ListRequest)){
+                http.addRequestProperty("Content-Type", "application/json");
+                String requestData = new Gson().toJson(request);
+                try (OutputStream requestBody = http.getOutputStream()) {
+                    requestBody.write(requestData.getBytes());
+                }
             }
         }
     }
