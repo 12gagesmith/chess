@@ -1,5 +1,6 @@
 package server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import server.records.*;
 
@@ -47,9 +48,18 @@ public class ServerFacade {
         return this.makeRequest("POST", path, createRequest, CreateResult.class, authToken);
     }
 
-    public void joinGame() throws DataAccessException {
+    public void joinGame(String playerColor, String gameIDStr, String authToken) throws DataAccessException {
         String path = "/game";
-        this.makeRequest("PUT", path, null, null, "");
+        int gameID = Integer.parseInt(gameIDStr);
+        JoinRequest joinRequest;
+        if (playerColor.equals("BLACK")) {
+            joinRequest = new JoinRequest(ChessGame.TeamColor.BLACK, gameID);
+        } else if (playerColor.equals("WHITE")) {
+            joinRequest = new JoinRequest(ChessGame.TeamColor.WHITE, gameID);
+        } else {
+            throw new DataAccessException(403, "Error: Invalid Player Color");
+        }
+        this.makeRequest("PUT", path, joinRequest, null, authToken);
     }
 
     public void clear() throws DataAccessException {
@@ -74,10 +84,11 @@ public class ServerFacade {
 
     private static void writeBody(Object request, HttpURLConnection http, String authToken) throws IOException {
         if (request != null) {
-            if (request instanceof LogoutRequest || request instanceof ListRequest || request instanceof CreateRequest) {
+            if (request instanceof LogoutRequest || request instanceof ListRequest || request instanceof CreateRequest
+                    || request instanceof JoinRequest) {
                 http.addRequestProperty("authorization", authToken);
             }
-            if (!(request instanceof ListRequest)){
+            if (!(request instanceof LogoutRequest || request instanceof ListRequest)) {
                 http.addRequestProperty("Content-Type", "application/json");
                 String requestData = new Gson().toJson(request);
                 try (OutputStream requestBody = http.getOutputStream()) {

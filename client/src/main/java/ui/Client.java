@@ -1,5 +1,6 @@
 package ui;
 
+import chess.*;
 import server.DataAccessException;
 import server.ServerFacade;
 import server.records.*;
@@ -29,8 +30,8 @@ public class Client {
                 case "logout" -> logout();
                 case "create" -> create(params);
                 case "list" -> list();
-                case "join" -> join();
-                case "observe" -> observe();
+                case "join" -> join(params);
+                case "observe" -> observe(params);
                 default -> help();
             };
         } catch (DataAccessException e) {
@@ -81,6 +82,10 @@ public class Client {
 
     public String create(String... params) throws DataAccessException {
         assertState(State.SIGNEDIN);
+        if (params.length < 1) {
+            System.out.print(SET_TEXT_COLOR_RED);
+            throw new DataAccessException(400, "Expected: <NAME>" + RESET_TEXT_COLOR);
+        }
         CreateResult createResult = server.createGame(this.authToken, params[0]);
         System.out.print(SET_TEXT_COLOR_GREEN);
         return "Your new game's ID is: " + SET_TEXT_COLOR_YELLOW + createResult.gameID().toString() + RESET_TEXT_COLOR;
@@ -97,12 +102,19 @@ public class Client {
         return RESET_TEXT_COLOR;
     }
 
-    public String join() throws DataAccessException {
+    public String join(String... params) throws DataAccessException {
         assertState(State.SIGNEDIN);
-        return "";
+        if (params.length < 2) {
+            System.out.print(SET_TEXT_COLOR_RED);
+            throw new DataAccessException(400, "Expected: <ID> <WHITE|BLACK>" + RESET_TEXT_COLOR);
+        }
+        server.joinGame(params[1], params[0], this.authToken);
+        ChessGame game = new ChessGame();
+        printBoard(game, params[1]);
+        return RESET_TEXT_COLOR + RESET_BG_COLOR;
     }
 
-    public String observe() throws DataAccessException {
+    public String observe(String... params) throws DataAccessException {
         assertState(State.SIGNEDIN);
         return "";
     }
@@ -150,5 +162,89 @@ public class Client {
                 }
             }
         }
+    }
+
+    private void printBoard(ChessGame game, String userColor) {
+        int xStart;
+        int yStart;
+        boolean everyOther = true;
+        ChessBoard board = game.getBoard();
+        if (userColor.equals("BLACK")) {
+            xStart = 9;
+            yStart = 0;
+        } else {
+            xStart = 0;
+            yStart = 9;
+        }
+        for (int y = yStart; 0 <= y; y--) {
+            printRow(board, xStart, y, everyOther);
+            everyOther = !everyOther;
+        }
+    }
+
+    private void printRow(ChessBoard board, int xStart, int y, boolean everyOther) {
+        for (int x = xStart; x <= 9; x++) {
+            if (y == 0 || y == 9) {
+                System.out.print(SET_BG_COLOR_DARK_GREEN);
+                System.out.print(SET_TEXT_COLOR_WHITE);
+                System.out.print(getAlpha(x));
+            } else if (x == 0 || x == 9) {
+                System.out.print(SET_BG_COLOR_DARK_GREEN);
+                System.out.print(SET_TEXT_COLOR_WHITE);
+                System.out.print(" " + y + " ");
+            } else {
+                if (everyOther) {
+                    System.out.print(SET_BG_COLOR_WHITE);
+                } else {
+                    System.out.print(SET_BG_COLOR_BLUE);
+                }
+                System.out.print(SET_TEXT_COLOR_BLACK);
+                ChessPosition position = new ChessPosition(y, x);
+                ChessPiece piece = board.getPiece(position);
+                if (piece == null) {
+                    System.out.print(EMPTY);
+                } else {
+                    printPiece(piece);
+                }
+                everyOther = !everyOther;
+            }
+        }
+        System.out.print(RESET_BG_COLOR + "\n");
+    }
+
+    private void printPiece(ChessPiece piece) {
+        if (piece.getTeamColor().equals(ChessGame.TeamColor.WHITE)) {
+            switch (piece.getPieceType()) {
+                case KING -> System.out.print(WHITE_KING);
+                case QUEEN -> System.out.print(WHITE_QUEEN);
+                case ROOK -> System.out.print(WHITE_ROOK);
+                case KNIGHT -> System.out.print(WHITE_KNIGHT);
+                case BISHOP -> System.out.print(WHITE_BISHOP);
+                default -> System.out.print(WHITE_PAWN);
+            }
+        } else {
+            switch (piece.getPieceType()) {
+                case KING -> System.out.print(BLACK_KING);
+                case QUEEN -> System.out.print(BLACK_QUEEN);
+                case ROOK -> System.out.print(BLACK_ROOK);
+                case KNIGHT -> System.out.print(BLACK_KNIGHT);
+                case BISHOP -> System.out.print(BLACK_BISHOP);
+                default -> System.out.print(BLACK_PAWN);
+            }
+        }
+    }
+
+    private String getAlpha(int n) {
+        return switch (n) {
+            case 1 -> " a ";
+            case 2 -> " b ";
+            case 3 -> " c ";
+            case 4 -> " d ";
+            case 5 -> " e ";
+            case 6 -> " f ";
+            case 7 -> " g ";
+            case 8 -> " h ";
+            default -> "   ";
+        };
     }
 }
