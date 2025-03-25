@@ -29,9 +29,10 @@ public class ServerFacade {
         return this.makeRequest("POST", path, loginRequest, LoginResult.class);
     }
 
-    public void logout() throws DataAccessException {
+    public void logout(String authToken) throws DataAccessException {
         String path = "/session";
-        this.makeRequest("DELETE", path, null, null);
+        LogoutRequest logoutRequest = new LogoutRequest(authToken);
+        this.makeRequest("DELETE", path, logoutRequest, null);
     }
 
     public void listGames() throws DataAccessException {
@@ -71,6 +72,9 @@ public class ServerFacade {
 
     private static void writeBody(Object request, HttpURLConnection http) throws IOException {
         if (request != null) {
+            if (request instanceof LogoutRequest) {
+                http.addRequestProperty("authorization", (((LogoutRequest) request).authToken()));
+            }
             http.addRequestProperty("Content-Type", "application/json");
             String requestData = new Gson().toJson(request);
             try (OutputStream requestBody = http.getOutputStream()) {

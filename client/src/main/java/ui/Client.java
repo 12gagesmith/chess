@@ -6,6 +6,8 @@ import server.records.*;
 
 import java.util.Arrays;
 
+import static ui.EscapeSequences.*;
+
 public class Client {
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
@@ -21,7 +23,7 @@ public class Client {
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
-                case "quit" -> "quit";
+                case "quit" -> quit();
                 case "register" -> register(params);
                 case "login" -> login(params);
                 case "logout" -> logout();
@@ -36,31 +38,45 @@ public class Client {
         }
     }
 
+    public String quit() throws DataAccessException {
+        if (state == State.SIGNEDIN) {
+            logout();
+        }
+        return "quit";
+    }
+
     public String register(String... params) throws DataAccessException {
         assertState(State.SIGNEDOUT);
         if (params.length < 3) {
-            throw new DataAccessException(400, "Expected: <USERNAME> <PASSWORD> <EMAIL>");
+            System.out.print(SET_TEXT_COLOR_RED);
+            throw new DataAccessException(400, "Expected: <USERNAME> <PASSWORD> <EMAIL>" + RESET_TEXT_COLOR);
         }
         RegisterResult registerResult = server.register(params[0], params[1], params[2]);
         state = State.SIGNEDIN;
         this.authToken = registerResult.authToken();
-        return String.format("You registered as %s", registerResult.username());
+        System.out.print(SET_TEXT_COLOR_GREEN);
+        return String.format("You registered as %s%s", registerResult.username(), RESET_TEXT_COLOR);
     }
 
     public String login(String... params) throws DataAccessException {
         assertState(State.SIGNEDOUT);
         if (params.length < 2) {
-            throw new DataAccessException(400, "Expected: <USERNAME> <PASSWORD>");
+            System.out.print(SET_TEXT_COLOR_RED);
+            throw new DataAccessException(400, "Expected: <USERNAME> <PASSWORD>" + RESET_TEXT_COLOR);
         }
         LoginResult loginResult = server.login(params[0], params[1]);
         state = State.SIGNEDIN;
         this.authToken = loginResult.authToken();
-        return String.format("You are logged in as %s", loginResult.username());
+        System.out.print(SET_TEXT_COLOR_GREEN);
+        return String.format("You are logged in as %s%s", loginResult.username(), RESET_TEXT_COLOR);
     }
 
     public String logout() throws DataAccessException {
         assertState(State.SIGNEDIN);
-        return "";
+        server.logout(this.authToken);
+        state = State.SIGNEDOUT;
+        System.out.print(SET_TEXT_COLOR_GREEN);
+        return "Successfully logged out" + RESET_TEXT_COLOR;
     }
 
     public String create() throws DataAccessException {
@@ -112,15 +128,16 @@ public class Client {
 
     private void assertState(State stateCheck) throws DataAccessException {
         if (!state.equals(stateCheck)) {
+            System.out.print(SET_TEXT_COLOR_RED);
             switch (stateCheck) {
                 case SIGNEDOUT -> {
-                    throw new DataAccessException(400, "You must be signed out to use this command");
+                    throw new DataAccessException(400, "You must be signed out to use this command" + RESET_TEXT_COLOR);
                 }
                 case SIGNEDIN -> {
-                    throw new DataAccessException(400, "You must be signed in to use this command");
+                    throw new DataAccessException(400, "You must be signed in to use this command" + RESET_TEXT_COLOR);
                 }
                 default -> {
-                    throw new DataAccessException(400, "You must be playing a game to use this command");
+                    throw new DataAccessException(400, "You must be playing a game to use this command" + RESET_TEXT_COLOR);
                 }
             }
         }
