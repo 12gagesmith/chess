@@ -4,7 +4,6 @@ import server.DataAccessException;
 import server.ServerFacade;
 import server.records.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import static ui.EscapeSequences.*;
@@ -28,7 +27,7 @@ public class Client {
                 case "register" -> register(params);
                 case "login" -> login(params);
                 case "logout" -> logout();
-                case "create" -> create();
+                case "create" -> create(params);
                 case "list" -> list();
                 case "join" -> join();
                 case "observe" -> observe();
@@ -80,17 +79,20 @@ public class Client {
         return "Successfully logged out" + RESET_TEXT_COLOR;
     }
 
-    public String create() throws DataAccessException {
+    public String create(String... params) throws DataAccessException {
         assertState(State.SIGNEDIN);
-        return "";
+        CreateResult createResult = server.createGame(this.authToken, params[0]);
+        System.out.print(SET_TEXT_COLOR_GREEN);
+        return "Your new game's ID is: " + SET_TEXT_COLOR_YELLOW + createResult.gameID().toString() + RESET_TEXT_COLOR;
     }
 
     public String list() throws DataAccessException {
         assertState(State.SIGNEDIN);
         ListResult listResult = server.listGames(this.authToken);
-        System.out.println(SET_BG_COLOR_BLUE);
+        System.out.println(SET_TEXT_COLOR_BLUE);
         for (GameList lst: listResult.games()) {
-            System.out.printf("Game ID: %s\nGame Name: %s\nWhite Username: %s\nBlack Username: %s\n", lst.gameID(), lst.gameName(), lst.whiteUsername(), lst.blackUsername());
+            System.out.printf("Game ID: %s\nGame Name: %s\nWhite Username: %s\nBlack Username: %s\n",
+                    lst.gameID(), lst.gameName(), lst.whiteUsername(), lst.blackUsername());
         }
         return RESET_TEXT_COLOR;
     }

@@ -20,49 +20,50 @@ public class ServerFacade {
     public RegisterResult register(String username, String password, String email) throws DataAccessException {
         String path = "/user";
         RegisterRequest registerRequest = new RegisterRequest(username, password, email);
-        return this.makeRequest("POST", path, registerRequest, RegisterResult.class);
+        return this.makeRequest("POST", path, registerRequest, RegisterResult.class, "");
     }
 
     public LoginResult login(String username, String password) throws DataAccessException {
         String path = "/session";
         LoginRequest loginRequest = new LoginRequest(username, password);
-        return this.makeRequest("POST", path, loginRequest, LoginResult.class);
+        return this.makeRequest("POST", path, loginRequest, LoginResult.class, "");
     }
 
     public void logout(String authToken) throws DataAccessException {
         String path = "/session";
         LogoutRequest logoutRequest = new LogoutRequest(authToken);
-        this.makeRequest("DELETE", path, logoutRequest, null);
+        this.makeRequest("DELETE", path, logoutRequest, null, authToken);
     }
 
     public ListResult listGames(String authToken) throws DataAccessException {
         String path = "/game";
         ListRequest listRequest = new ListRequest(authToken);
-        return this.makeRequest("GET", path, listRequest, ListResult.class);
+        return this.makeRequest("GET", path, listRequest, ListResult.class, authToken);
     }
 
-    public void createGame() throws DataAccessException {
+    public CreateResult createGame(String authToken, String gameName) throws DataAccessException {
         String path = "/game";
-        this.makeRequest("POST", path, null, null);
+        CreateRequest createRequest = new CreateRequest(gameName);
+        return this.makeRequest("POST", path, createRequest, CreateResult.class, authToken);
     }
 
     public void joinGame() throws DataAccessException {
         String path = "/game";
-        this.makeRequest("PUT", path, null, null);
+        this.makeRequest("PUT", path, null, null, "");
     }
 
     public void clear() throws DataAccessException {
         String path = "/db";
-        this.makeRequest("DELETE", path, null, null);
+        this.makeRequest("DELETE", path, null, null, "");
     }
 
-    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws DataAccessException {
+    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws DataAccessException {
         try {
             URL url = new URI(serverUrl + path).toURL(); // Set url with path
             HttpURLConnection http = (HttpURLConnection) url.openConnection(); // Make connection to that url
             http.setRequestMethod(method); // Set type of request (POST, GET, etc.)
             http.setDoOutput(true); // Needs to be set to true
-            writeBody(request, http); // If the request has a body, write to it
+            writeBody(request, http, authToken); // If the request has a body, write to it
             http.connect(); // Sends request to server
             throwIfNotSuccessful(http); // Self-explanatory
             return readBody(http, responseClass); // Find result body, and return it
@@ -71,13 +72,10 @@ public class ServerFacade {
         }
     }
 
-    private static void writeBody(Object request, HttpURLConnection http) throws IOException {
+    private static void writeBody(Object request, HttpURLConnection http, String authToken) throws IOException {
         if (request != null) {
-            if (request instanceof LogoutRequest) {
-                http.addRequestProperty("authorization", ((LogoutRequest) request).authToken());
-            }
-            if (request instanceof ListRequest) {
-                http.addRequestProperty("authorization", ((ListRequest) request).authToken());
+            if (request instanceof LogoutRequest || request instanceof ListRequest || request instanceof CreateRequest) {
+                http.addRequestProperty("authorization", authToken);
             }
             http.addRequestProperty("Content-Type", "application/json");
             String requestData = new Gson().toJson(request);
