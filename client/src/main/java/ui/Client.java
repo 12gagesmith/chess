@@ -116,6 +116,12 @@ public class Client {
 
     public String observe(String... params) throws DataAccessException {
         assertState(State.SIGNEDIN);
+        if (params.length < 1) {
+            System.out.print(SET_TEXT_COLOR_RED);
+            throw new DataAccessException(400, "Expected: <ID>" + RESET_TEXT_COLOR);
+        }
+        ChessGame game = new ChessGame();
+        printBoard(game, "WHITE");
         return "";
     }
 
@@ -165,51 +171,53 @@ public class Client {
     }
 
     private void printBoard(ChessGame game, String userColor) {
-        int xStart;
-        int yStart;
         boolean everyOther = true;
         ChessBoard board = game.getBoard();
         if (userColor.equals("BLACK")) {
-            xStart = 9;
-            yStart = 0;
+            for (int y = 0; y <= 9; y++) {
+                for (int x = 9; 0 <= x; x--) {
+                    printRow(board, x, y, everyOther);
+                    everyOther = !everyOther;
+                }
+                System.out.print(RESET_BG_COLOR + "\n");
+                everyOther = !everyOther;
+            }
         } else {
-            xStart = 0;
-            yStart = 9;
-        }
-        for (int y = yStart; 0 <= y; y--) {
-            printRow(board, xStart, y, everyOther);
-            everyOther = !everyOther;
-        }
-    }
-
-    private void printRow(ChessBoard board, int xStart, int y, boolean everyOther) {
-        for (int x = xStart; x <= 9; x++) {
-            if (y == 0 || y == 9) {
-                System.out.print(SET_BG_COLOR_DARK_GREEN);
-                System.out.print(SET_TEXT_COLOR_WHITE);
-                System.out.print(getAlpha(x));
-            } else if (x == 0 || x == 9) {
-                System.out.print(SET_BG_COLOR_DARK_GREEN);
-                System.out.print(SET_TEXT_COLOR_WHITE);
-                System.out.print(" " + y + " ");
-            } else {
-                if (everyOther) {
-                    System.out.print(SET_BG_COLOR_WHITE);
-                } else {
-                    System.out.print(SET_BG_COLOR_BLUE);
+            for (int y = 9; 0 <= y; y--) {
+                for (int x = 0; x <= 9; x++) {
+                    printRow(board, x, y, everyOther);
+                    everyOther = !everyOther;
                 }
-                System.out.print(SET_TEXT_COLOR_BLACK);
-                ChessPosition position = new ChessPosition(y, x);
-                ChessPiece piece = board.getPiece(position);
-                if (piece == null) {
-                    System.out.print(EMPTY);
-                } else {
-                    printPiece(piece);
-                }
+                System.out.print(RESET_BG_COLOR + "\n");
                 everyOther = !everyOther;
             }
         }
-        System.out.print(RESET_BG_COLOR + "\n");
+    }
+
+    private void printRow(ChessBoard board, int x, int y, boolean everyOther) {
+        if (y == 0 || y == 9) {
+            System.out.print(SET_BG_COLOR_DARK_GREEN);
+            System.out.print(SET_TEXT_COLOR_WHITE);
+            System.out.print(getAlpha(x));
+        } else if (x == 0 || x == 9) {
+            System.out.print(SET_BG_COLOR_DARK_GREEN);
+            System.out.print(SET_TEXT_COLOR_WHITE);
+            System.out.print(" " + y + " ");
+        } else {
+            if (everyOther) {
+                System.out.print(SET_BG_COLOR_WHITE);
+            } else {
+                System.out.print(SET_BG_COLOR_BLUE);
+            }
+            System.out.print(SET_TEXT_COLOR_BLACK);
+            ChessPosition position = new ChessPosition(y, x);
+            ChessPiece piece = board.getPiece(position);
+            if (piece == null) {
+                System.out.print(EMPTY);
+            } else {
+                printPiece(piece);
+            }
+        }
     }
 
     private void printPiece(ChessPiece piece) {
