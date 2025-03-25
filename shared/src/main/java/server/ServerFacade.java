@@ -48,9 +48,8 @@ public class ServerFacade {
         return this.makeRequest("POST", path, createRequest, CreateResult.class, authToken);
     }
 
-    public void joinGame(String playerColor, String gameIDStr, String authToken) throws DataAccessException {
+    public void joinGame(String playerColor, int gameID, String authToken) throws DataAccessException {
         String path = "/game";
-        int gameID = Integer.parseInt(gameIDStr);
         JoinRequest joinRequest;
         if (playerColor.equals("BLACK")) {
             joinRequest = new JoinRequest(ChessGame.TeamColor.BLACK, gameID);

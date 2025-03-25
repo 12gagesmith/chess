@@ -5,6 +5,7 @@ import server.DataAccessException;
 import server.ServerFacade;
 import server.records.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import static ui.EscapeSequences.*;
@@ -13,6 +14,7 @@ public class Client {
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
     private String authToken = "";
+    private ArrayList<GameNumMap> games = new ArrayList<>();
 
     public Client(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -52,11 +54,16 @@ public class Client {
             System.out.print(SET_TEXT_COLOR_RED);
             throw new DataAccessException(400, "Expected: <USERNAME> <PASSWORD> <EMAIL>" + RESET_TEXT_COLOR);
         }
-        RegisterResult registerResult = server.register(params[0], params[1], params[2]);
-        state = State.SIGNEDIN;
-        this.authToken = registerResult.authToken();
-        System.out.print(SET_TEXT_COLOR_GREEN);
-        return String.format("You registered as %s%s", registerResult.username(), RESET_TEXT_COLOR);
+        try {
+            RegisterResult registerResult = server.register(params[0], params[1], params[2]);
+            state = State.SIGNEDIN;
+            this.authToken = registerResult.authToken();
+            System.out.print(SET_TEXT_COLOR_GREEN);
+            return String.format("You registered as %s%s", registerResult.username(), RESET_TEXT_COLOR);
+        } catch (Exception e) {
+            System.out.print(SET_TEXT_COLOR_RED);
+            return "Error: User already exists" + RESET_TEXT_COLOR;
+        }
     }
 
     public String login(String... params) throws DataAccessException {
@@ -65,11 +72,16 @@ public class Client {
             System.out.print(SET_TEXT_COLOR_RED);
             throw new DataAccessException(400, "Expected: <USERNAME> <PASSWORD>" + RESET_TEXT_COLOR);
         }
-        LoginResult loginResult = server.login(params[0], params[1]);
-        state = State.SIGNEDIN;
-        this.authToken = loginResult.authToken();
-        System.out.print(SET_TEXT_COLOR_GREEN);
-        return String.format("You are logged in as %s%s", loginResult.username(), RESET_TEXT_COLOR);
+        try {
+            LoginResult loginResult = server.login(params[0], params[1]);
+            state = State.SIGNEDIN;
+            this.authToken = loginResult.authToken();
+            System.out.print(SET_TEXT_COLOR_GREEN);
+            return String.format("You are logged in as %s%s", loginResult.username(), RESET_TEXT_COLOR);
+        } catch (Exception e) {
+            System.out.print(SET_TEXT_COLOR_RED);
+            return "Error: Invalid username or password" + RESET_TEXT_COLOR;
+        }
     }
 
     public String logout() throws DataAccessException {
@@ -87,17 +99,22 @@ public class Client {
             throw new DataAccessException(400, "Expected: <NAME>" + RESET_TEXT_COLOR);
         }
         CreateResult createResult = server.createGame(this.authToken, params[0]);
+        games.add(new GameNumMap(games.size(), createResult.gameID()));
         System.out.print(SET_TEXT_COLOR_GREEN);
-        return "Your new game's ID is: " + SET_TEXT_COLOR_YELLOW + createResult.gameID().toString() + RESET_TEXT_COLOR;
+        return "Your new game's # is: " + SET_TEXT_COLOR_YELLOW + createResult.gameID().toString() + RESET_TEXT_COLOR;
     }
 
     public String list() throws DataAccessException {
         assertState(State.SIGNEDIN);
         ListResult listResult = server.listGames(this.authToken);
         System.out.println(SET_TEXT_COLOR_YELLOW);
+        int game_num = 1;
+        games = new ArrayList<>();
         for (GameList lst: listResult.games()) {
-            System.out.printf("Game ID: %s\nGame Name: %s\nWhite Username: %s\nBlack Username: %s\n\n",
-                    lst.gameID(), lst.gameName(), lst.whiteUsername(), lst.blackUsername());
+            games.add(new GameNumMap(game_num, lst.gameID()));
+            System.out.printf("Game #%s\nGame Name: %s\nWhite Username: %s\nBlack Username: %s\n\n",
+                    game_num, lst.gameName(), lst.whiteUsername(), lst.blackUsername());
+            game_num += 1;
         }
         return RESET_TEXT_COLOR;
     }
@@ -106,9 +123,20 @@ public class Client {
         assertState(State.SIGNEDIN);
         if (params.length < 2) {
             System.out.print(SET_TEXT_COLOR_RED);
-            throw new DataAccessException(400, "Expected: <ID> <WHITE|BLACK>" + RESET_TEXT_COLOR);
+            throw new DataAccessException(400, "Expected: <GAME#> <WHITE|BLACK>" + RESET_TEXT_COLOR);
         }
-        server.joinGame(params[1], params[0], this.authToken);
+        try {
+            int game_num = Integer.parseInt(params[0]);
+            GameNumMap gameNumMap = games.get(game_num - 1);
+            server.joinGame(params[1], gameNumMap.gameID(), this.authToken);
+        } catch (DataAccessException e) {
+            System.out.print(SET_TEXT_COLOR_RED + "Error: Invalid Color");
+            return RESET_TEXT_COLOR;
+        } catch (Exception e) {
+            System.out.print(SET_TEXT_COLOR_RED);
+            System.out.print("Error: Invalid game #. Type 'list' to view games");
+            return RESET_TEXT_COLOR;
+        }
         ChessGame game = new ChessGame();
         printBoard(game, params[1]);
         return RESET_TEXT_COLOR + RESET_BG_COLOR;
@@ -118,7 +146,15 @@ public class Client {
         assertState(State.SIGNEDIN);
         if (params.length < 1) {
             System.out.print(SET_TEXT_COLOR_RED);
-            throw new DataAccessException(400, "Expected: <ID>" + RESET_TEXT_COLOR);
+            throw new DataAccessException(400, "Expected: <GAME#>" + RESET_TEXT_COLOR);
+        }
+        try {
+            int game_num = Integer.parseInt(params[0]);
+            GameNumMap gameNumMap = games.get(game_num - 1);
+        } catch (Exception e) {
+            System.out.print(SET_TEXT_COLOR_RED);
+            System.out.print("Error: Invalid game #. Type 'list' to view games");
+            return RESET_TEXT_COLOR;
         }
         ChessGame game = new ChessGame();
         printBoard(game, "WHITE");
@@ -136,8 +172,8 @@ public class Client {
                         logout - log out of your account
                         create <NAME> - create a chess game
                         list - list all chess games
-                        join <ID> <WHITE|BLACK> - join a game as white or black
-                        observe <ID> - observe a game
+                        join <GAME#> <WHITE|BLACK> - join a game as white or black
+                        observe <GAME#> - observe a game
                         help - display possible commands
                         quit - exit the program
                         """ + RESET_TEXT_COLOR;
