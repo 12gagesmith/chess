@@ -35,9 +35,10 @@ public class ServerFacade {
         this.makeRequest("DELETE", path, logoutRequest, null);
     }
 
-    public void listGames() throws DataAccessException {
+    public ListResult listGames(String authToken) throws DataAccessException {
         String path = "/game";
-        this.makeRequest("GET", path, null, null);
+        ListRequest listRequest = new ListRequest(authToken);
+        return this.makeRequest("GET", path, listRequest, ListResult.class);
     }
 
     public void createGame() throws DataAccessException {
@@ -73,7 +74,10 @@ public class ServerFacade {
     private static void writeBody(Object request, HttpURLConnection http) throws IOException {
         if (request != null) {
             if (request instanceof LogoutRequest) {
-                http.addRequestProperty("authorization", (((LogoutRequest) request).authToken()));
+                http.addRequestProperty("authorization", ((LogoutRequest) request).authToken());
+            }
+            if (request instanceof ListRequest) {
+                http.addRequestProperty("authorization", ((ListRequest) request).authToken());
             }
             http.addRequestProperty("Content-Type", "application/json");
             String requestData = new Gson().toJson(request);

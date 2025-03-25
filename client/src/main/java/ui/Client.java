@@ -4,6 +4,7 @@ import server.DataAccessException;
 import server.ServerFacade;
 import server.records.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import static ui.EscapeSequences.*;
@@ -86,7 +87,12 @@ public class Client {
 
     public String list() throws DataAccessException {
         assertState(State.SIGNEDIN);
-        return "";
+        ListResult listResult = server.listGames(this.authToken);
+        System.out.println(SET_BG_COLOR_BLUE);
+        for (GameList lst: listResult.games()) {
+            System.out.printf("Game ID: %s\nGame Name: %s\nWhite Username: %s\nBlack Username: %s\n", lst.gameID(), lst.gameName(), lst.whiteUsername(), lst.blackUsername());
+        }
+        return RESET_TEXT_COLOR;
     }
 
     public String join() throws DataAccessException {
