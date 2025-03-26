@@ -1,7 +1,7 @@
 package dataaccess;
 
 import model.AuthData;
-import serverFacade.DataAccessException;
+import serverfacade.DataAccessException;
 
 public interface AuthDAO {
 

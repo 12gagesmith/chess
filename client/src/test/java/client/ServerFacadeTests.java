@@ -1,9 +1,9 @@
 package client;
 
 import org.junit.jupiter.api.*;
-import serverFacade.*;
+import serverfacade.*;
 import server.Server;
-import serverFacade.records.*;
+import serverfacade.records.*;
 
 
 public class ServerFacadeTests {

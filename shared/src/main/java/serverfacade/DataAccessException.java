@@ -1,4 +1,4 @@
-package serverFacade;
+package serverfacade;
 
 /**
  * Indicates there was an error connecting to the database

@@ -2,8 +2,8 @@ package dataaccess;
 
 import chess.ChessGame;
 import model.GameData;
-import serverFacade.DataAccessException;
-import serverFacade.records.GameList;
+import serverfacade.DataAccessException;
+import serverfacade.records.GameList;
 import java.util.ArrayList;
 
 public class MemoryGameDAO implements GameDAO{

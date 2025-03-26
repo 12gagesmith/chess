@@ -1,9 +1,9 @@
 package ui;
 
 import chess.*;
-import serverFacade.DataAccessException;
-import serverFacade.ServerFacade;
-import serverFacade.records.*;
+import serverfacade.DataAccessException;
+import serverfacade.ServerFacade;
+import serverfacade.records.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;

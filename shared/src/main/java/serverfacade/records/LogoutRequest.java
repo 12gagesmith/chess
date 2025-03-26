@@ -1,4 +1,4 @@
-package serverFacade.records;
+package serverfacade.records;
 
 public record LogoutRequest(String authToken) {
 }

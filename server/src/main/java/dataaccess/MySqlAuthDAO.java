@@ -2,7 +2,7 @@ package dataaccess;
 
 import com.google.gson.Gson;
 import model.AuthData;
-import serverFacade.DataAccessException;
+import serverfacade.DataAccessException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
