@@ -2,7 +2,8 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.*;
-import server.records.*;
+import serverFacade.DataAccessException;
+import serverFacade.records.*;
 import service.Service;
 import spark.*;
 

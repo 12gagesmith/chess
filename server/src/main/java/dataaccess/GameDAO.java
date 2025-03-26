@@ -2,8 +2,8 @@ package dataaccess;
 
 import java.util.ArrayList;
 import model.GameData;
-import server.DataAccessException;
-import server.records.GameList;
+import serverFacade.DataAccessException;
+import serverFacade.records.GameList;
 
 public interface GameDAO {
     ArrayList<GameList> listGames() throws DataAccessException;

@@ -1,4 +1,4 @@
-package server.records;
+package serverFacade.records;
 
 public record LoginRequest(String username, String password) {
 }

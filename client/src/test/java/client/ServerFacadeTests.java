@@ -1,10 +1,9 @@
 package client;
 
 import org.junit.jupiter.api.*;
-import server.DataAccessException;
+import serverFacade.*;
 import server.Server;
-import server.ServerFacade;
-import server.records.RegisterResult;
+import serverFacade.records.*;
 
 
 public class ServerFacadeTests {

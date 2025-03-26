@@ -1,9 +1,9 @@
 package ui;
 
 import chess.*;
-import server.DataAccessException;
-import server.ServerFacade;
-import server.records.*;
+import serverFacade.DataAccessException;
+import serverFacade.ServerFacade;
+import serverFacade.records.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -108,13 +108,13 @@ public class Client {
         assertState(State.SIGNEDIN);
         ListResult listResult = server.listGames(this.authToken);
         System.out.println(SET_TEXT_COLOR_YELLOW);
-        int game_num = 1;
+        int gameNum = 1;
         games = new ArrayList<>();
         for (GameList lst: listResult.games()) {
-            games.add(new GameNumMap(game_num, lst.gameID()));
+            games.add(new GameNumMap(gameNum, lst.gameID()));
             System.out.printf("Game #%s\nGame Name: %s\nWhite Username: %s\nBlack Username: %s\n\n",
-                    game_num, lst.gameName(), lst.whiteUsername(), lst.blackUsername());
-            game_num += 1;
+                    gameNum, lst.gameName(), lst.whiteUsername(), lst.blackUsername());
+            gameNum += 1;
         }
         return RESET_TEXT_COLOR;
     }
@@ -126,8 +126,8 @@ public class Client {
             throw new DataAccessException(400, "Expected: <GAME#> <WHITE|BLACK>" + RESET_TEXT_COLOR);
         }
         try {
-            int game_num = Integer.parseInt(params[0]);
-            GameNumMap gameNumMap = games.get(game_num - 1);
+            int gameNum = Integer.parseInt(params[0]);
+            GameNumMap gameNumMap = games.get(gameNum - 1);
             server.joinGame(params[1], gameNumMap.gameID(), this.authToken);
         } catch (DataAccessException e) {
             System.out.print(SET_TEXT_COLOR_RED + "Error: Invalid Color");
@@ -149,8 +149,8 @@ public class Client {
             throw new DataAccessException(400, "Expected: <GAME#>" + RESET_TEXT_COLOR);
         }
         try {
-            int game_num = Integer.parseInt(params[0]);
-            GameNumMap gameNumMap = games.get(game_num - 1);
+            int gameNum = Integer.parseInt(params[0]);
+            GameNumMap gameNumMap = games.get(gameNum - 1);
         } catch (Exception e) {
             System.out.print(SET_TEXT_COLOR_RED);
             System.out.print("Error: Invalid game #. Type 'list' to view games");
@@ -193,15 +193,9 @@ public class Client {
         if (!state.equals(stateCheck)) {
             System.out.print(SET_TEXT_COLOR_RED);
             switch (stateCheck) {
-                case SIGNEDOUT -> {
-                    throw new DataAccessException(400, "You must be signed out to use this command" + RESET_TEXT_COLOR);
-                }
-                case SIGNEDIN -> {
-                    throw new DataAccessException(400, "You must be signed in to use this command" + RESET_TEXT_COLOR);
-                }
-                default -> {
-                    throw new DataAccessException(400, "You must be playing a game to use this command" + RESET_TEXT_COLOR);
-                }
+                case SIGNEDOUT -> throw new DataAccessException(400, "You must be signed out to use this command" + RESET_TEXT_COLOR);
+                case SIGNEDIN -> throw new DataAccessException(400, "You must be signed in to use this command" + RESET_TEXT_COLOR);
+                default -> throw new DataAccessException(400, "You must be playing a game to use this command" + RESET_TEXT_COLOR);
             }
         }
     }

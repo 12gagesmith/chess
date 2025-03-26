@@ -3,8 +3,8 @@ package service;
 import chess.ChessGame;
 import dataaccess.*;
 import org.junit.jupiter.api.*;
-import server.DataAccessException;
-import server.records.*;
+import serverFacade.DataAccessException;
+import serverFacade.records.*;
 
 import java.util.ArrayList;
 

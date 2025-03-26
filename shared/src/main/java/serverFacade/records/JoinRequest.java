@@ -1,4 +1,4 @@
-package server.records;
+package serverFacade.records;
 
 import chess.ChessGame;
 

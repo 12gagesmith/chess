@@ -1,4 +1,4 @@
-package server.records;
+package serverFacade.records;
 
 public record RegisterResult(String username, String authToken) {
 }

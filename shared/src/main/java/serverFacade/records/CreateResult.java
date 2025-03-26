@@ -1,4 +1,4 @@
-package server.records;
+package serverFacade.records;
 
 public record CreateResult(Integer gameID) {
 }
