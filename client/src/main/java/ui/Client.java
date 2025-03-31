@@ -50,7 +50,7 @@ public class Client {
 
     public String register(String... params) throws DataAccessException {
         assertState(State.SIGNEDOUT);
-        if (params.length < 3) {
+        if (params.length != 3) {
             System.out.print(SET_TEXT_COLOR_RED);
             throw new DataAccessException(400, "Expected: <USERNAME> <PASSWORD> <EMAIL>" + RESET_TEXT_COLOR);
         }
@@ -68,7 +68,7 @@ public class Client {
 
     public String login(String... params) throws DataAccessException {
         assertState(State.SIGNEDOUT);
-        if (params.length < 2) {
+        if (params.length != 2) {
             System.out.print(SET_TEXT_COLOR_RED);
             throw new DataAccessException(400, "Expected: <USERNAME> <PASSWORD>" + RESET_TEXT_COLOR);
         }
@@ -94,7 +94,7 @@ public class Client {
 
     public String create(String... params) throws DataAccessException {
         assertState(State.SIGNEDIN);
-        if (params.length < 1) {
+        if (params.length != 1) {
             System.out.print(SET_TEXT_COLOR_RED);
             throw new DataAccessException(400, "Expected: <NAME>" + RESET_TEXT_COLOR);
         }
@@ -112,8 +112,11 @@ public class Client {
         games = new ArrayList<>();
         for (GameList lst: listResult.games()) {
             games.add(new GameNumMap(gameNum, lst.gameID()));
-            System.out.printf("Game #%s\nGame Name: %s\nWhite Username: %s\nBlack Username: %s\n\n",
-                    gameNum, lst.gameName(), lst.whiteUsername(), lst.blackUsername());
+            System.out.printf("Game #%s\nGame Name: %s\n", gameNum, lst.gameName());
+            if (lst.whiteUsername() == null) { System.out.print("White Username: --available--\n");}
+            else {System.out.print("White Username: " + lst.whiteUsername() + "\n");}
+            if (lst.whiteUsername() == null) { System.out.print("Black Username: --available--\n\n");}
+            else {System.out.print("Black Username: " + lst.blackUsername() + "\n\n");}
             gameNum += 1;
         }
         return RESET_TEXT_COLOR;
@@ -121,7 +124,7 @@ public class Client {
 
     public String join(String... params) throws DataAccessException {
         assertState(State.SIGNEDIN);
-        if (params.length < 2) {
+        if (params.length != 2) {
             System.out.print(SET_TEXT_COLOR_RED);
             throw new DataAccessException(400, "Expected: <GAME#> <WHITE|BLACK>" + RESET_TEXT_COLOR);
         }
@@ -130,7 +133,7 @@ public class Client {
             GameNumMap gameNumMap = games.get(gameNum - 1);
             server.joinGame(params[1], gameNumMap.gameID(), this.authToken);
         } catch (DataAccessException e) {
-            System.out.print(SET_TEXT_COLOR_RED + "Error: Invalid Color");
+            System.out.print(SET_TEXT_COLOR_RED + "Error: Invalid Color; not available");
             return RESET_TEXT_COLOR;
         } catch (Exception e) {
             System.out.print(SET_TEXT_COLOR_RED);
@@ -144,7 +147,7 @@ public class Client {
 
     public String observe(String... params) throws DataAccessException {
         assertState(State.SIGNEDIN);
-        if (params.length < 1) {
+        if (params.length != 1) {
             System.out.print(SET_TEXT_COLOR_RED);
             throw new DataAccessException(400, "Expected: <GAME#>" + RESET_TEXT_COLOR);
         }
@@ -226,11 +229,11 @@ public class Client {
 
     private void printRow(ChessBoard board, int x, int y, boolean everyOther) {
         if (y == 0 || y == 9) {
-            System.out.print(SET_BG_COLOR_DARK_GREEN);
+            System.out.print(SET_BG_COLOR_LIGHT_GREY);
             System.out.print(SET_TEXT_COLOR_WHITE);
             System.out.print(getAlpha(x));
         } else if (x == 0 || x == 9) {
-            System.out.print(SET_BG_COLOR_DARK_GREEN);
+            System.out.print(SET_BG_COLOR_LIGHT_GREY);
             System.out.print(SET_TEXT_COLOR_WHITE);
             System.out.print(" " + y + " ");
         } else {
