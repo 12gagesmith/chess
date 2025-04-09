@@ -34,6 +34,11 @@ public class Client {
                 case "list" -> list();
                 case "join" -> join(params);
                 case "observe" -> observe(params);
+                case "redraw" -> "TODO: redraw";
+                case "leave" -> "TODO: leave";
+                case "move" -> "TODO: move";
+                case "resign" -> "TODO: resign";
+                case "highlight" -> "TODO: highlight";
                 default -> help();
             };
         } catch (DataAccessException e) {
@@ -168,7 +173,14 @@ public class Client {
         System.out.print(SET_TEXT_COLOR_BLUE);
         switch (state) {
             case State.PLAYING -> {
-                return "TODO: UI during gameplay" + RESET_TEXT_COLOR;
+                return """
+                        redraw - redraws the chess board
+                        leave - leave the game
+                        move - move a chess piece
+                        resign - forfeit the game
+                        highlight - highlights the legal moves for a piece
+                        help - display possible commands
+                        """ + RESET_TEXT_COLOR;
             }
             case State.SIGNEDIN -> {
                 return """
