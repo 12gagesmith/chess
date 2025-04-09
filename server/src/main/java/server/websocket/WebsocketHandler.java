@@ -5,6 +5,7 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 
@@ -24,7 +25,11 @@ public class WebsocketHandler {
         }
     }
 
-    private void connect(String authToken, Session session) {}
+    private void connect(String authToken, Session session) throws IOException {
+        connections.add(authToken, session);
+        String message = "A new player has joined the game";
+        connections.broadcast(authToken, message);
+    }
 
     private void make_move() {}
 
