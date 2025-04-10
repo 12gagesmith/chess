@@ -1,15 +1,17 @@
 package ui;
 
+import ui.websocket.NotificationHandler;
+import websocket.messages.ServerMessage;
+
 import java.util.Scanner;
 
-import static ui.EscapeSequences.RESET_TEXT_COLOR;
-import static ui.EscapeSequences.SET_TEXT_COLOR_BLUE;
+import static ui.EscapeSequences.*;
 
-public class Repl {
+public class Repl implements NotificationHandler {
     private final Client client;
 
     public Repl(String serverUrl) {
-        client = new Client(serverUrl);
+        client = new Client(serverUrl, this);
     }
 
     public void run() {
@@ -31,5 +33,11 @@ public class Repl {
 
     private void printPrompt() {
         System.out.print("\n" + ">>> ");
+    }
+
+    @Override
+    public void notify(String message) {
+        System.out.println(SET_TEXT_COLOR_RED + message + RESET_TEXT_COLOR);
+        printPrompt();
     }
 }

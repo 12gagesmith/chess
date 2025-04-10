@@ -4,6 +4,7 @@ import chess.*;
 import serverfacade.DataAccessException;
 import serverfacade.ServerFacade;
 import serverfacade.records.*;
+import ui.websocket.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,9 +16,14 @@ public class Client {
     private State state = State.SIGNEDOUT;
     private String authToken = "";
     private ArrayList<GameNumMap> games = new ArrayList<>();
+    private WebsocketFacade websocket;
+    private final NotificationHandler notificationHandler;
+    private final String serverUrl;
 
-    public Client(String serverUrl) {
+    public Client(String serverUrl, NotificationHandler notificationHandler) {
         server = new ServerFacade(serverUrl);
+        this.notificationHandler = notificationHandler;
+        this.serverUrl = serverUrl;
     }
 
     public String eval(String input) {
@@ -34,11 +40,11 @@ public class Client {
                 case "list" -> list();
                 case "join" -> join(params);
                 case "observe" -> observe(params);
-                case "redraw" -> "TODO: redraw";
-                case "leave" -> "TODO: leave";
-                case "move" -> "TODO: move";
-                case "resign" -> "TODO: resign";
-                case "highlight" -> "TODO: highlight";
+                case "redraw" -> redraw();
+                case "leave" -> leave();
+                case "move" -> move();
+                case "resign" -> resign();
+                case "highlight" -> highlight();
                 default -> help();
             };
         } catch (DataAccessException e) {
@@ -147,6 +153,7 @@ public class Client {
         }
         ChessGame game = new ChessGame();
         printBoard(game, params[1]);
+        state = State.PLAYING;
         return RESET_TEXT_COLOR + RESET_BG_COLOR;
     }
 
@@ -167,6 +174,31 @@ public class Client {
         ChessGame game = new ChessGame();
         printBoard(game, "WHITE");
         return "";
+    }
+
+    public String redraw() throws DataAccessException {
+        assertState(State.PLAYING);
+        return "TODO: redraw";
+    }
+
+    public String leave() throws DataAccessException {
+        assertState(State.PLAYING);
+        return "TODO: leave";
+    }
+
+    public String move() throws DataAccessException {
+        assertState(State.PLAYING);
+        return "TODO: move";
+    }
+
+    public String resign() throws DataAccessException {
+        assertState(State.PLAYING);
+        return "TODO: resign";
+    }
+
+    public String highlight() throws DataAccessException {
+        assertState(State.PLAYING);
+        return "TODO: highlight";
     }
 
     public String help() {
@@ -210,7 +242,7 @@ public class Client {
             switch (stateCheck) {
                 case SIGNEDOUT -> throw new DataAccessException(400, "You must be signed out to use this command" + RESET_TEXT_COLOR);
                 case SIGNEDIN -> throw new DataAccessException(400, "You must be signed in to use this command" + RESET_TEXT_COLOR);
-                default -> throw new DataAccessException(400, "You must be playing a game to use this command" + RESET_TEXT_COLOR);
+                default -> throw new DataAccessException(400, "You must be in a game to use this command" + RESET_TEXT_COLOR);
             }
         }
     }
