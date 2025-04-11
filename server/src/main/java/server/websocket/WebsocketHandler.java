@@ -27,7 +27,7 @@ public class WebsocketHandler {
 
     private void connect(String authToken, Session session) throws IOException {
         connections.add(authToken, session);
-        String message = "A new player has joined the game";
+        String message = "<NAME> has joined the game as <COLOR>";
         connections.broadcast(authToken, message);
     }
 

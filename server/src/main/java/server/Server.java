@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.*;
+import server.websocket.WebsocketHandler;
 import serverfacade.DataAccessException;
 import serverfacade.records.*;
 import service.Service;
@@ -10,6 +11,7 @@ import spark.*;
 public class Server {
 
     private final Service service;
+    private final WebsocketHandler websocketHandler;
 
     public Server() {
         try {
@@ -17,6 +19,7 @@ public class Server {
             AuthDAO authDAO = new MySqlAuthDAO();
             GameDAO gameDAO = new MySqlGameDAO();
             this.service = new Service(userDAO, authDAO, gameDAO);
+            this.websocketHandler = new WebsocketHandler();
         } catch (DataAccessException ex) {
             throw new RuntimeException(String.format("Unable to start server: %s%n", ex.getMessage()));
         }
@@ -26,6 +29,8 @@ public class Server {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
+
+        Spark.webSocket("/ws", websocketHandler);
 
         // Register your endpoints and handle exceptions here.
         Spark.post("/user", this::register);

@@ -19,6 +19,7 @@ public class Client {
     private WebsocketFacade websocket;
     private final NotificationHandler notificationHandler;
     private final String serverUrl;
+    private String visitorName;
 
     public Client(String serverUrl, NotificationHandler notificationHandler) {
         server = new ServerFacade(serverUrl);
@@ -69,8 +70,9 @@ public class Client {
             RegisterResult registerResult = server.register(params[0], params[1], params[2]);
             state = State.SIGNEDIN;
             this.authToken = registerResult.authToken();
+            this.visitorName = registerResult.username();
             System.out.print(SET_TEXT_COLOR_GREEN);
-            return String.format("You registered as %s%s", registerResult.username(), RESET_TEXT_COLOR);
+            return String.format("You registered as %s%s", visitorName, RESET_TEXT_COLOR);
         } catch (Exception e) {
             System.out.print(SET_TEXT_COLOR_RED);
             return "Error: User already exists" + RESET_TEXT_COLOR;
@@ -87,8 +89,9 @@ public class Client {
             LoginResult loginResult = server.login(params[0], params[1]);
             state = State.SIGNEDIN;
             this.authToken = loginResult.authToken();
+            this.visitorName = loginResult.username();
             System.out.print(SET_TEXT_COLOR_GREEN);
-            return String.format("You are logged in as %s%s", loginResult.username(), RESET_TEXT_COLOR);
+            return String.format("You are logged in as %s%s", visitorName, RESET_TEXT_COLOR);
         } catch (Exception e) {
             System.out.print(SET_TEXT_COLOR_RED);
             return "Error: Invalid username or password" + RESET_TEXT_COLOR;
@@ -139,10 +142,12 @@ public class Client {
             System.out.print(SET_TEXT_COLOR_RED);
             throw new DataAccessException(400, "Expected: <GAME#> <WHITE|BLACK>" + RESET_TEXT_COLOR);
         }
+        int gameID = -1; // Temporary variable, will be overwritten
         try {
             int gameNum = Integer.parseInt(params[0]);
             GameNumMap gameNumMap = games.get(gameNum - 1);
-            server.joinGame(params[1], gameNumMap.gameID(), this.authToken);
+            gameID = gameNumMap.gameID();
+            server.joinGame(params[1], gameID, this.authToken);
         } catch (DataAccessException e) {
             System.out.print(SET_TEXT_COLOR_RED + "Error: Invalid Color; not available");
             return RESET_TEXT_COLOR;
@@ -154,6 +159,7 @@ public class Client {
         ChessGame game = new ChessGame();
         printBoard(game, params[1]);
         state = State.PLAYING;
+        websocket.connect(visitorName, authToken, gameID);
         return RESET_TEXT_COLOR + RESET_BG_COLOR;
     }
 
