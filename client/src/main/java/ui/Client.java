@@ -159,7 +159,7 @@ public class Client {
         ChessGame game = new ChessGame();
         printBoard(game, params[1]);
         state = State.PLAYING;
-        websocket.connect(visitorName, authToken, gameID);
+        websocket.connect(authToken, gameID);
         return RESET_TEXT_COLOR + RESET_BG_COLOR;
     }
 

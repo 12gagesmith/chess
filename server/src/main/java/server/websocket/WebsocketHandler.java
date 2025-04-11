@@ -1,9 +1,15 @@
 package server.websocket;
 
 import com.google.gson.Gson;
+import dataaccess.AuthDAO;
+import dataaccess.GameDAO;
+import dataaccess.UserDAO;
+import model.AuthData;
+import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import serverfacade.DataAccessException;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
@@ -13,22 +19,45 @@ import java.io.IOException;
 public class WebsocketHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
+    private final UserDAO userDAO;
+    private final AuthDAO authDAO;
+    private final GameDAO gameDAO;
+
+    public WebsocketHandler(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
+        this.userDAO = userDAO;
+        this.authDAO = authDAO;
+        this.gameDAO = gameDAO;
+    }
 
     @OnWebSocketMessage
-    public void onMessage(Session session, String message) throws IOException {
+    public void onMessage(Session session, String message) throws DataAccessException {
         UserGameCommand userGameCommand = new Gson().fromJson(message, UserGameCommand.class);
         switch (userGameCommand.getCommandType()) {
-            case CONNECT -> connect(userGameCommand.getAuthToken(), session);
+            case CONNECT -> connect(userGameCommand.getAuthToken(), userGameCommand.getGameID(), session);
             case MAKE_MOVE -> make_move();
             case LEAVE -> leave();
             case RESIGN -> resign();
         }
     }
 
-    private void connect(String authToken, Session session) throws IOException {
-        connections.add(authToken, session);
-        String message = "<NAME> has joined the game as <COLOR>";
-        connections.broadcast(authToken, message);
+    private void connect(String authToken, int gameID, Session session) throws DataAccessException {
+        try {
+            AuthData authData = authDAO.getAuth(authToken);
+            GameData gameData = gameDAO.getGame(gameID);
+            String user = authData.username();
+            connections.add(user, session);
+            String message;
+            if (user.equals(gameData.whiteUsername())) {
+                message = String.format("%s has joined the game as WHITE", user);
+            } else if (user.equals(gameData.blackUsername())) {
+                message = String.format("%s has joined the game as BLACK", user);
+            } else {
+                message = String.format("%s is observing the game", user);
+            }
+            connections.broadcast(user, message);
+        } catch (IOException ex) {
+            throw new DataAccessException(500, ex.getMessage());
+        }
     }
 
     private void make_move() {}

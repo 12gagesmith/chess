@@ -19,7 +19,7 @@ public class Server {
             AuthDAO authDAO = new MySqlAuthDAO();
             GameDAO gameDAO = new MySqlGameDAO();
             this.service = new Service(userDAO, authDAO, gameDAO);
-            this.websocketHandler = new WebsocketHandler();
+            this.websocketHandler = new WebsocketHandler(userDAO, authDAO, gameDAO);
         } catch (DataAccessException ex) {
             throw new RuntimeException(String.format("Unable to start server: %s%n", ex.getMessage()));
         }
