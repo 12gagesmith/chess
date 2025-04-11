@@ -11,6 +11,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import serverfacade.DataAccessException;
 import websocket.commands.UserGameCommand;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
@@ -54,7 +55,8 @@ public class WebsocketHandler {
             } else {
                 message = String.format("%s is observing the game", user);
             }
-            connections.broadcast(user, message);
+            ServerMessage notificationMessage = new NotificationMessage(message);
+            connections.broadcast(user, notificationMessage);
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }

@@ -71,6 +71,7 @@ public class Client {
             state = State.SIGNEDIN;
             this.authToken = registerResult.authToken();
             this.visitorName = registerResult.username();
+            websocket = new WebsocketFacade(serverUrl, notificationHandler);
             System.out.print(SET_TEXT_COLOR_GREEN);
             return String.format("You registered as %s%s", visitorName, RESET_TEXT_COLOR);
         } catch (Exception e) {
@@ -90,6 +91,7 @@ public class Client {
             state = State.SIGNEDIN;
             this.authToken = loginResult.authToken();
             this.visitorName = loginResult.username();
+            websocket = new WebsocketFacade(serverUrl, notificationHandler);
             System.out.print(SET_TEXT_COLOR_GREEN);
             return String.format("You are logged in as %s%s", visitorName, RESET_TEXT_COLOR);
         } catch (Exception e) {
@@ -102,6 +104,7 @@ public class Client {
         assertState(State.SIGNEDIN);
         server.logout(this.authToken);
         state = State.SIGNEDOUT;
+        websocket = null;
         System.out.print(SET_TEXT_COLOR_GREEN);
         return "Successfully logged out" + RESET_TEXT_COLOR;
     }
@@ -189,6 +192,7 @@ public class Client {
 
     public String leave() throws DataAccessException {
         assertState(State.PLAYING);
+        state = State.SIGNEDIN;
         return "TODO: leave";
     }
 
@@ -243,13 +247,20 @@ public class Client {
     }
 
     private void assertState(State stateCheck) throws DataAccessException {
-        if (!state.equals(stateCheck)) {
-            System.out.print(SET_TEXT_COLOR_RED);
-            switch (stateCheck) {
-                case SIGNEDOUT -> throw new DataAccessException(400, "You must be signed out to use this command" + RESET_TEXT_COLOR);
-                case SIGNEDIN -> throw new DataAccessException(400, "You must be signed in to use this command" + RESET_TEXT_COLOR);
-                default -> throw new DataAccessException(400, "You must be in a game to use this command" + RESET_TEXT_COLOR);
+        if (state.equals(stateCheck)) {
+            return;
+        }
+        System.out.print(SET_TEXT_COLOR_RED);
+        switch (stateCheck) {
+            case SIGNEDOUT -> throw new DataAccessException(400, "You must be signed out to use this command" + RESET_TEXT_COLOR);
+            case SIGNEDIN -> {
+                if (state.equals(State.SIGNEDOUT)) {
+                    throw new DataAccessException(400, "You must be signed in to use this command" + RESET_TEXT_COLOR);
+                } else {
+                    throw new DataAccessException(400, "You must not be in a game to use this command" + RESET_TEXT_COLOR);
+                }
             }
+            default -> throw new DataAccessException(400, "You must be in a game to use this command" + RESET_TEXT_COLOR);
         }
     }
 
