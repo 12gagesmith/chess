@@ -3,7 +3,7 @@ package ui.websocket;
 import com.google.gson.Gson;
 import serverfacade.DataAccessException;
 import websocket.commands.UserGameCommand;
-import websocket.messages.ServerMessage;
+import websocket.messages.*;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -28,7 +28,12 @@ public class WebsocketFacade extends Endpoint {
                 @Override
                 public void onMessage(String message) {
                     ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
-                    notificationHandler.notify(message);
+                    switch (serverMessage.getServerMessageType()){
+                        case NOTIFICATION -> serverMessage = new Gson().fromJson(message, NotificationMessage.class);
+                        case LOAD_GAME -> serverMessage = new Gson().fromJson(message, LoadGameMessage.class);
+                        case ERROR -> serverMessage = new Gson().fromJson(message, ErrorMessage.class);
+                    }
+                    notificationHandler.notify(serverMessage);
                 }
             });
         } catch (URISyntaxException | IOException | DeploymentException ex) {

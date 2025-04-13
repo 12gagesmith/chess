@@ -1,7 +1,7 @@
 package ui;
 
 import ui.websocket.NotificationHandler;
-import websocket.messages.ServerMessage;
+import websocket.messages.*;
 
 import java.util.Scanner;
 
@@ -36,8 +36,11 @@ public class Repl implements NotificationHandler {
     }
 
     @Override
-    public void notify(String message) {
-        System.out.println(SET_TEXT_COLOR_RED + message + RESET_TEXT_COLOR);
+    public void notify(ServerMessage message) {
+        if (message instanceof NotificationMessage) {
+            System.out.println(SET_TEXT_COLOR_YELLOW + ((NotificationMessage) message).message + RESET_TEXT_COLOR);
+        }
+        // System.out.println(SET_TEXT_COLOR_YELLOW + message.toString() + RESET_TEXT_COLOR);
         printPrompt();
     }
 }
