@@ -132,7 +132,7 @@ public class Client {
             System.out.printf("Game #%s\nGame Name: %s\n", gameNum, lst.gameName());
             if (lst.whiteUsername() == null) { System.out.print("White Username: --available--\n");}
             else {System.out.print("White Username: " + lst.whiteUsername() + "\n");}
-            if (lst.whiteUsername() == null) { System.out.print("Black Username: --available--\n\n");}
+            if (lst.blackUsername() == null) { System.out.print("Black Username: --available--\n\n");}
             else {System.out.print("Black Username: " + lst.blackUsername() + "\n\n");}
             gameNum += 1;
         }
@@ -150,7 +150,7 @@ public class Client {
             int gameNum = Integer.parseInt(params[0]);
             GameNumMap gameNumMap = games.get(gameNum - 1);
             gameID = gameNumMap.gameID();
-            server.joinGame(params[1], gameID, this.authToken);
+            server.joinGame(params[1].toUpperCase(), gameID, this.authToken);
         } catch (DataAccessException e) {
             System.out.print(SET_TEXT_COLOR_RED + "Error: Invalid Color; not available");
             return RESET_TEXT_COLOR;
@@ -159,8 +159,6 @@ public class Client {
             System.out.print("Error: Invalid game #. Type 'list' to view games");
             return RESET_TEXT_COLOR;
         }
-        ChessGame game = new ChessGame();
-        printBoard(game, params[1]);
         state = State.PLAYING;
         websocket.connect(authToken, gameID);
         return RESET_TEXT_COLOR + RESET_BG_COLOR;
@@ -172,16 +170,18 @@ public class Client {
             System.out.print(SET_TEXT_COLOR_RED);
             throw new DataAccessException(400, "Expected: <GAME#>" + RESET_TEXT_COLOR);
         }
+        int gameID = -1; // Temporary variable, will be overwritten
         try {
             int gameNum = Integer.parseInt(params[0]);
             GameNumMap gameNumMap = games.get(gameNum - 1);
+            gameID = gameNumMap.gameID();
         } catch (Exception e) {
             System.out.print(SET_TEXT_COLOR_RED);
             System.out.print("Error: Invalid game #. Type 'list' to view games");
             return RESET_TEXT_COLOR;
         }
-        ChessGame game = new ChessGame();
-        printBoard(game, "WHITE");
+        state = State.PLAYING;
+        websocket.connect(authToken, gameID);
         return "";
     }
 
@@ -264,7 +264,8 @@ public class Client {
         }
     }
 
-    private void printBoard(ChessGame game, String userColor) {
+    public void printBoard(ChessGame game, String userColor) {
+        System.out.println("\n");
         boolean everyOther = true;
         ChessBoard board = game.getBoard();
         if (userColor.equals("BLACK")) {

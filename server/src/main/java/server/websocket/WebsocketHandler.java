@@ -11,6 +11,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import serverfacade.DataAccessException;
 import websocket.commands.UserGameCommand;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
@@ -46,16 +47,20 @@ public class WebsocketHandler {
             AuthData authData = authDAO.getAuth(authToken);
             GameData gameData = gameDAO.getGame(gameID);
             String user = authData.username();
+            String color = "WHITE";
             connections.add(user, session);
             String message;
             if (user.equals(gameData.whiteUsername())) {
                 message = String.format("%s has joined the game as WHITE", user);
             } else if (user.equals(gameData.blackUsername())) {
                 message = String.format("%s has joined the game as BLACK", user);
+                color = "BLACK";
             } else {
                 message = String.format("%s is observing the game", user);
             }
             ServerMessage notificationMessage = new NotificationMessage(message);
+            ServerMessage gameMessage = new LoadGameMessage(gameData, color);
+            connections.sendOne(user, gameMessage);
             connections.broadcast(user, notificationMessage);
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());
