@@ -59,7 +59,7 @@ public class WebsocketHandler {
                 return;
             }
             String user = authData.username();
-            connections.add(user, session);
+            connections.add(user, gameID, session);
             if (gameData == null) {
                 ServerMessage errorMessage = new ErrorMessage("Invalid game ID");
                 connections.sendOne(user, errorMessage);
@@ -76,7 +76,7 @@ public class WebsocketHandler {
             ServerMessage notificationMessage = new NotificationMessage(message);
             ServerMessage gameMessage = new LoadGameMessage(gameData, null);
             connections.sendOne(user, gameMessage);
-            connections.broadcast(user, notificationMessage);
+            connections.broadcast(user, gameID, notificationMessage);
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }
@@ -137,8 +137,8 @@ public class WebsocketHandler {
             ServerMessage notificationMessage = new NotificationMessage(String.format("%s moved their %s from %s to %s",
                     user, piece.getPieceType(), startPosition, endPosition));
             connections.sendOne(user, loadMessage);
-            connections.broadcast(user, loadMessage);
-            connections.broadcast(user, notificationMessage);
+            connections.broadcast(user, gameID, loadMessage);
+            connections.broadcast(user, gameID, notificationMessage);
         } catch (IOException | InvalidMoveException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }
@@ -204,7 +204,7 @@ public class WebsocketHandler {
             connections.remove(user);
             String message = String.format("%s has left the game", user);
             ServerMessage notificationMessage = new NotificationMessage(message);
-            connections.broadcast(user, notificationMessage);
+            connections.broadcast(user, gameID, notificationMessage);
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }
