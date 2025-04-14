@@ -204,8 +204,12 @@ public class Client {
         return SET_TEXT_COLOR_YELLOW + "You have left the game" + RESET_TEXT_COLOR;
     }
 
-    public String move() throws DataAccessException {
+    public String move(String... params) throws DataAccessException {
         assertState(State.PLAYING);
+        if (params.length != 1) {
+            System.out.print(SET_TEXT_COLOR_RED);
+            throw new DataAccessException(400, "Expected: <POSITION>" + RESET_TEXT_COLOR);
+        }
         return "TODO: move";
     }
 
@@ -214,8 +218,13 @@ public class Client {
         return "TODO: resign";
     }
 
-    public String highlight() throws DataAccessException {
+    public String highlight(String... params) throws DataAccessException {
         assertState(State.PLAYING);
+        if (params.length != 1) {
+            System.out.print(SET_TEXT_COLOR_RED);
+            throw new DataAccessException(400, "Expected: <POSITION>" + RESET_TEXT_COLOR);
+        }
+        String position = params[0];
         return "TODO: highlight";
     }
 
@@ -226,9 +235,9 @@ public class Client {
                 return """
                         redraw - redraws the chess board
                         leave - leave the game
-                        move - move a chess piece
+                        move <POSITION> - move a chess piece
                         resign - forfeit the game
-                        highlight - highlights the legal moves for a piece
+                        highlight <POSITION> - highlights the legal moves for a piece
                         help - display possible commands
                         """ + RESET_TEXT_COLOR;
             }
