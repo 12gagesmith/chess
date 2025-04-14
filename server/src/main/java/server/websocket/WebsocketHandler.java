@@ -12,6 +12,7 @@ import websocket.commands.*;
 import websocket.messages.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import static chess.ChessGame.TeamColor.*;
@@ -35,7 +36,11 @@ public class WebsocketHandler {
         UserGameCommand usc = new Gson().fromJson(message, UserGameCommand.class);
         if (usc.getCommandType().equals(UserGameCommand.CommandType.MAKE_MOVE)) {
             MakeMoveCommand mmc = new Gson().fromJson(message, MakeMoveCommand.class);
-            make_move(mmc.getAuthToken(), mmc.getGameID(), mmc.move, session);
+            if (mmc.move.getStartPosition().equals(mmc.move.getEndPosition())) {
+                highlight(mmc.getAuthToken(), mmc.getGameID(), mmc.move);
+            } else {
+                make_move(mmc.getAuthToken(), mmc.getGameID(), mmc.move, session);
+            }
         }
         switch (usc.getCommandType()) {
             case CONNECT -> connect(usc.getAuthToken(), usc.getGameID(), session);
@@ -69,7 +74,7 @@ public class WebsocketHandler {
                 message = String.format("%s is observing the game", user);
             }
             ServerMessage notificationMessage = new NotificationMessage(message);
-            ServerMessage gameMessage = new LoadGameMessage(gameData);
+            ServerMessage gameMessage = new LoadGameMessage(gameData, null);
             connections.sendOne(user, gameMessage);
             connections.broadcast(user, notificationMessage);
         } catch (IOException ex) {
@@ -126,7 +131,7 @@ public class WebsocketHandler {
             game.makeMove(move);
             GameData updatedGame = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
             gameDAO.updateGame(updatedGame, gameID);
-            ServerMessage loadMessage = new LoadGameMessage(updatedGame);
+            ServerMessage loadMessage = new LoadGameMessage(updatedGame, null);
             String startPosition = String.format("%s%s", getAlpha(move.getStartPosition().getColumn()), move.getStartPosition().getRow());
             String endPosition = String.format("%s%s", getAlpha(move.getEndPosition().getColumn()), move.getEndPosition().getRow());
             ServerMessage notificationMessage = new NotificationMessage(String.format("%s moved their %s from %s to %s",
@@ -156,6 +161,30 @@ public class WebsocketHandler {
             case 8 -> "h";
             default -> null;
         };
+    }
+
+    private void highlight(String authToken, int gameID, ChessMove move) throws DataAccessException {
+        try {
+            AuthData authData = authDAO.getAuth(authToken);
+            String user = authData.username();
+            GameData gameData = gameDAO.getGame(gameID);
+            ChessBoard board = gameData.game().getBoard();
+            ChessPiece piece = board.getPiece(move.getStartPosition());
+            if (piece == null) {
+                sendError(user, "There is no piece at that position");
+                return;
+            }
+            Collection<ChessMove> moves = gameData.game().validMoves(move.getStartPosition());
+            Collection<ChessPosition> positions = new ArrayList<>();
+            positions.add(move.getStartPosition());
+            for (ChessMove eachMove : moves) {
+                positions.add(eachMove.getEndPosition());
+            }
+            ServerMessage loadMessage = new LoadGameMessage(gameData, positions);
+            connections.sendOne(user, loadMessage);
+        } catch (IOException ex) {
+            throw new DataAccessException(500, ex.getMessage());
+        }
     }
 
     private void leave(String authToken, int gameID) throws DataAccessException {

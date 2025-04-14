@@ -9,6 +9,7 @@ import websocket.commands.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 
 import static ui.EscapeSequences.*;
 
@@ -232,8 +233,11 @@ public class Client {
             System.out.print(SET_TEXT_COLOR_RED);
             throw new DataAccessException(400, "Expected: <POSITION>" + RESET_TEXT_COLOR);
         }
-        String position = params[0];
-        return "TODO: highlight";
+        String[] rawInput = params[0].split("");
+        ChessPosition position = new ChessPosition(Integer.parseInt(rawInput[1]), getNum(rawInput[0]));
+        ChessMove move = new ChessMove(position, position, null);
+        websocket.sendCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, curGameID, move);
+        return "";
     }
 
     public String help() {
@@ -289,14 +293,14 @@ public class Client {
         }
     }
 
-    public void printBoard(ChessGame game) {
+    public void printBoard(ChessGame game, Collection<ChessPosition> positions) {
         System.out.println("\n");
         boolean everyOther = true;
         ChessBoard board = game.getBoard();
         if (curColor.equals("BLACK")) {
             for (int y = 0; y <= 9; y++) {
                 for (int x = 9; 0 <= x; x--) {
-                    printRow(board, x, y, everyOther);
+                    printRow(board, x, y, everyOther, positions);
                     everyOther = !everyOther;
                 }
                 System.out.print(RESET_BG_COLOR + "\n");
@@ -305,7 +309,7 @@ public class Client {
         } else {
             for (int y = 9; 0 <= y; y--) {
                 for (int x = 0; x <= 9; x++) {
-                    printRow(board, x, y, everyOther);
+                    printRow(board, x, y, everyOther, positions);
                     everyOther = !everyOther;
                 }
                 System.out.print(RESET_BG_COLOR + "\n");
@@ -314,7 +318,8 @@ public class Client {
         }
     }
 
-    private void printRow(ChessBoard board, int x, int y, boolean everyOther) {
+    private void printRow(ChessBoard board, int x, int y, boolean everyOther, Collection<ChessPosition> positions) {
+        ChessPosition curPosition = new ChessPosition(y, x);
         if (y == 0 || y == 9) {
             System.out.print(SET_BG_COLOR_LIGHT_GREY);
             System.out.print(SET_TEXT_COLOR_WHITE);
@@ -325,9 +330,17 @@ public class Client {
             System.out.print(" " + y + " ");
         } else {
             if (everyOther) {
-                System.out.print(SET_BG_COLOR_WHITE);
+                if (positions != null && positions.contains(curPosition)) {
+                    System.out.print(SET_BG_COLOR_GREEN);
+                } else {
+                    System.out.print(SET_BG_COLOR_WHITE);
+                }
             } else {
-                System.out.print(SET_BG_COLOR_BLUE);
+                if (positions != null && positions.contains(curPosition)) {
+                    System.out.print(SET_BG_COLOR_DARK_GREEN);
+                } else {
+                    System.out.print(SET_BG_COLOR_BLUE);
+                }
             }
             System.out.print(SET_TEXT_COLOR_BLACK);
             ChessPosition position = new ChessPosition(y, x);
