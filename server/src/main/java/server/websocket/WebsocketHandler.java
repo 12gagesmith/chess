@@ -82,7 +82,17 @@ public class WebsocketHandler {
     private void leave(String authToken, int gameID) throws DataAccessException {
         try {
             AuthData authData = authDAO.getAuth(authToken);
+            GameData gameData = gameDAO.getGame(gameID);
+            String whiteUser = null;
+            String blackUser = null;
             String user = authData.username();
+            if (user.equals(gameData.whiteUsername())) {
+                blackUser = gameData.blackUsername();
+            } else {
+                whiteUser = gameData.whiteUsername();
+            }
+            gameData = new GameData(gameID, whiteUser, blackUser, gameData.gameName(), gameData.game());
+            gameDAO.updateGame(gameData, gameID);
             connections.remove(user);
             String message = String.format("%s has left the game", user);
             ServerMessage notificationMessage = new NotificationMessage(message);
