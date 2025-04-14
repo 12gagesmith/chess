@@ -1,7 +1,9 @@
 package ui.websocket;
 
+import chess.ChessMove;
 import com.google.gson.Gson;
 import serverfacade.DataAccessException;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.*;
 
@@ -45,9 +47,14 @@ public class WebsocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void sendCommand(UserGameCommand.CommandType type, String authToken, int gameID) throws DataAccessException {
+    public void sendCommand(UserGameCommand.CommandType type, String authToken, int gameID, ChessMove move) throws DataAccessException {
         try {
-            UserGameCommand usc = new UserGameCommand(type, authToken, gameID);
+            UserGameCommand usc;
+            if (type.equals(UserGameCommand.CommandType.MAKE_MOVE)) {
+                usc = new MakeMoveCommand(authToken, gameID, move);
+            } else {
+                usc = new UserGameCommand(type, authToken, gameID);
+            }
             this.session.getBasicRemote().sendText(new Gson().toJson(usc));
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());

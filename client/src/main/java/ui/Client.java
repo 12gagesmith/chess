@@ -5,7 +5,7 @@ import serverfacade.DataAccessException;
 import serverfacade.ServerFacade;
 import serverfacade.records.*;
 import ui.websocket.*;
-import websocket.commands.UserGameCommand;
+import websocket.commands.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,9 +45,9 @@ public class Client {
                 case "observe" -> observe(params);
                 case "redraw" -> redraw();
                 case "leave" -> leave();
-                case "move" -> move();
+                case "move" -> move(params);
                 case "resign" -> resign();
-                case "highlight" -> highlight();
+                case "highlight" -> highlight(params);
                 default -> help();
             };
         } catch (DataAccessException e) {
@@ -147,7 +147,7 @@ public class Client {
             System.out.print(SET_TEXT_COLOR_RED);
             throw new DataAccessException(400, "Expected: <GAME#> <WHITE|BLACK>" + RESET_TEXT_COLOR);
         }
-        int gameID = -1; // Temporary variable, will be overwritten
+        int gameID;
         try {
             int gameNum = Integer.parseInt(params[0]);
             GameNumMap gameNumMap = games.get(gameNum - 1);
@@ -162,7 +162,7 @@ public class Client {
             return RESET_TEXT_COLOR;
         }
         state = State.PLAYING;
-        websocket.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+        websocket.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID, null);
         curGameID = gameID;
         return SET_TEXT_COLOR_YELLOW + String.format("You have joined game #%s", Integer.parseInt(params[0]))
                 + RESET_TEXT_COLOR + RESET_BG_COLOR;
@@ -174,7 +174,7 @@ public class Client {
             System.out.print(SET_TEXT_COLOR_RED);
             throw new DataAccessException(400, "Expected: <GAME#>" + RESET_TEXT_COLOR);
         }
-        int gameID = -1; // Temporary variable, will be overwritten
+        int gameID;
         try {
             int gameNum = Integer.parseInt(params[0]);
             GameNumMap gameNumMap = games.get(gameNum - 1);
@@ -185,7 +185,7 @@ public class Client {
             return RESET_TEXT_COLOR;
         }
         state = State.PLAYING;
-        websocket.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+        websocket.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID, null);
         curGameID = gameID;
         return SET_TEXT_COLOR_YELLOW + String.format("You are now observing game #%s", Integer.parseInt(params[0]))
                 + RESET_TEXT_COLOR;
@@ -193,14 +193,14 @@ public class Client {
 
     public String redraw() throws DataAccessException {
         assertState(State.PLAYING);
-        websocket.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, curGameID);
+        websocket.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, curGameID, null);
         return "";
     }
 
     public String leave() throws DataAccessException {
         assertState(State.PLAYING);
         state = State.SIGNEDIN;
-        websocket.sendCommand(UserGameCommand.CommandType.LEAVE, authToken, curGameID);
+        websocket.sendCommand(UserGameCommand.CommandType.LEAVE, authToken, curGameID, null);
         return SET_TEXT_COLOR_YELLOW + "You have left the game" + RESET_TEXT_COLOR;
     }
 
@@ -208,9 +208,14 @@ public class Client {
         assertState(State.PLAYING);
         if (params.length != 1) {
             System.out.print(SET_TEXT_COLOR_RED);
-            throw new DataAccessException(400, "Expected: <POSITION>" + RESET_TEXT_COLOR);
+            throw new DataAccessException(400, "Expected: <STARTPOS/ENDPOS> (ex. e2e4)" + RESET_TEXT_COLOR);
         }
-        return "TODO: move";
+        String[] rawInput = params[0].split("");
+        ChessPosition startPosition = new ChessPosition(Integer.parseInt(rawInput[1]), getNum(rawInput[0]));
+        ChessPosition endPosition = new ChessPosition(Integer.parseInt(rawInput[3]), getNum(rawInput[2]));
+        ChessMove move = new ChessMove(startPosition, endPosition, null);
+        websocket.sendCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, curGameID, move);
+        return "";
     }
 
     public String resign() throws DataAccessException {
@@ -235,7 +240,7 @@ public class Client {
                 return """
                         redraw - redraws the chess board
                         leave - leave the game
-                        move <POSITION> - move a chess piece
+                        move <STARTPOS/ENDPOS> (ex. e2e4) - move a chess piece
                         resign - forfeit the game
                         highlight <POSITION> - highlights the legal moves for a piece
                         help - display possible commands
@@ -365,6 +370,20 @@ public class Client {
             case 7 -> " g ";
             case 8 -> " h ";
             default -> "   ";
+        };
+    }
+
+    private int getNum(String alpha) throws DataAccessException {
+        return switch (alpha) {
+            case "a" -> 1;
+            case "b" -> 2;
+            case "c" -> 3;
+            case "d" -> 4;
+            case "e" -> 5;
+            case "f" -> 6;
+            case "g" -> 7;
+            case "h" -> 8;
+            default -> throw new DataAccessException(403, "Invalid position");
         };
     }
 }
