@@ -35,7 +35,7 @@ public class WebsocketHandler {
         UserGameCommand usc = new Gson().fromJson(message, UserGameCommand.class);
         if (usc.getCommandType().equals(UserGameCommand.CommandType.MAKE_MOVE)) {
             MakeMoveCommand mmc = new Gson().fromJson(message, MakeMoveCommand.class);
-            make_move(mmc.getAuthToken(), mmc.getGameID(), mmc.move);
+            make_move(mmc.getAuthToken(), mmc.getGameID(), mmc.move, session);
         }
         switch (usc.getCommandType()) {
             case CONNECT -> connect(usc.getAuthToken(), usc.getGameID(), session);
@@ -54,7 +54,6 @@ public class WebsocketHandler {
                 return;
             }
             String user = authData.username();
-            String color = "WHITE";
             connections.add(user, session);
             if (gameData == null) {
                 ServerMessage errorMessage = new ErrorMessage("Invalid game ID");
@@ -66,12 +65,11 @@ public class WebsocketHandler {
                 message = String.format("%s has joined the game as WHITE", user);
             } else if (user.equals(gameData.blackUsername())) {
                 message = String.format("%s has joined the game as BLACK", user);
-                color = "BLACK";
             } else {
                 message = String.format("%s is observing the game", user);
             }
             ServerMessage notificationMessage = new NotificationMessage(message);
-            ServerMessage gameMessage = new LoadGameMessage(gameData, color);
+            ServerMessage gameMessage = new LoadGameMessage(gameData);
             connections.sendOne(user, gameMessage);
             connections.broadcast(user, notificationMessage);
         } catch (IOException ex) {
@@ -79,9 +77,14 @@ public class WebsocketHandler {
         }
     }
 
-    private void make_move(String authToken, int gameID, ChessMove move) throws DataAccessException {
+    private void make_move(String authToken, int gameID, ChessMove move, Session session) throws DataAccessException {
         try {
             AuthData authData = authDAO.getAuth(authToken);
+            if (authData == null) {
+                ServerMessage errorMessage = new ErrorMessage("Invalid authorization");
+                session.getRemote().sendString(new Gson().toJson(errorMessage));
+                return;
+            }
             GameData gameData = gameDAO.getGame(gameID);
             ChessGame game = gameData.game();
             String user = authData.username();
@@ -96,6 +99,7 @@ public class WebsocketHandler {
             }
             if (!userColor.equals(game.getTeamTurn())) {
                 sendError(user, "It is not your turn");
+                return;
             }
             ChessBoard board = game.getBoard();
             ChessPiece piece = board.getPiece(move.getStartPosition());
@@ -122,7 +126,7 @@ public class WebsocketHandler {
             game.makeMove(move);
             GameData updatedGame = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
             gameDAO.updateGame(updatedGame, gameID);
-            ServerMessage loadMessage = new LoadGameMessage(updatedGame, userColor.toString());
+            ServerMessage loadMessage = new LoadGameMessage(updatedGame);
             String startPosition = String.format("%s%s", getAlpha(move.getStartPosition().getColumn()), move.getStartPosition().getRow());
             String endPosition = String.format("%s%s", getAlpha(move.getEndPosition().getColumn()), move.getEndPosition().getRow());
             ServerMessage notificationMessage = new NotificationMessage(String.format("%s moved their %s from %s to %s",

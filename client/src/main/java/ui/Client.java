@@ -22,6 +22,7 @@ public class Client {
     private final String serverUrl;
     private String visitorName;
     private int curGameID;
+    private String curColor;
 
     public Client(String serverUrl, NotificationHandler notificationHandler) {
         server = new ServerFacade(serverUrl);
@@ -164,6 +165,7 @@ public class Client {
         state = State.PLAYING;
         websocket.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID, null);
         curGameID = gameID;
+        curColor = params[1].toUpperCase();
         return SET_TEXT_COLOR_YELLOW + String.format("You have joined game #%s", Integer.parseInt(params[0]))
                 + RESET_TEXT_COLOR + RESET_BG_COLOR;
     }
@@ -187,6 +189,7 @@ public class Client {
         state = State.PLAYING;
         websocket.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID, null);
         curGameID = gameID;
+        curColor = "WHITE";
         return SET_TEXT_COLOR_YELLOW + String.format("You are now observing game #%s", Integer.parseInt(params[0]))
                 + RESET_TEXT_COLOR;
     }
@@ -215,7 +218,7 @@ public class Client {
         ChessPosition endPosition = new ChessPosition(Integer.parseInt(rawInput[3]), getNum(rawInput[2]));
         ChessMove move = new ChessMove(startPosition, endPosition, null);
         websocket.sendCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, curGameID, move);
-        return "";
+        return SET_TEXT_COLOR_YELLOW + "Move made. Please wait for other player to move" + RESET_TEXT_COLOR;
     }
 
     public String resign() throws DataAccessException {
@@ -286,11 +289,11 @@ public class Client {
         }
     }
 
-    public void printBoard(ChessGame game, String userColor) {
+    public void printBoard(ChessGame game) {
         System.out.println("\n");
         boolean everyOther = true;
         ChessBoard board = game.getBoard();
-        if (userColor.equals("BLACK")) {
+        if (curColor.equals("BLACK")) {
             for (int y = 0; y <= 9; y++) {
                 for (int x = 9; 0 <= x; x--) {
                     printRow(board, x, y, everyOther);
