@@ -37,7 +37,7 @@ public class WebsocketHandler {
         switch (userGameCommand.getCommandType()) {
             case CONNECT -> connect(userGameCommand.getAuthToken(), userGameCommand.getGameID(), session);
             case MAKE_MOVE -> make_move();
-            case LEAVE -> leave();
+            case LEAVE -> leave(userGameCommand.getAuthToken());
             case RESIGN -> resign();
         }
     }
@@ -69,7 +69,18 @@ public class WebsocketHandler {
 
     private void make_move() {}
 
-    private void leave() {}
+    private void leave(String authToken) throws DataAccessException {
+        try {
+            AuthData authData = authDAO.getAuth(authToken);
+            String user = authData.username();
+            connections.remove(user);
+            String message = String.format("%s has left the game", user);
+            ServerMessage notificationMessage = new NotificationMessage(message);
+            connections.broadcast(user, notificationMessage);
+        } catch (IOException ex) {
+            throw new DataAccessException(500, ex.getMessage());
+        }
+    }
 
     private void resign() {}
 }

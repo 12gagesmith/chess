@@ -5,6 +5,7 @@ import serverfacade.DataAccessException;
 import serverfacade.ServerFacade;
 import serverfacade.records.*;
 import ui.websocket.*;
+import websocket.commands.UserGameCommand;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +21,7 @@ public class Client {
     private final NotificationHandler notificationHandler;
     private final String serverUrl;
     private String visitorName;
+    private int curGameID;
 
     public Client(String serverUrl, NotificationHandler notificationHandler) {
         server = new ServerFacade(serverUrl);
@@ -160,8 +162,10 @@ public class Client {
             return RESET_TEXT_COLOR;
         }
         state = State.PLAYING;
-        websocket.connect(authToken, gameID);
-        return RESET_TEXT_COLOR + RESET_BG_COLOR;
+        websocket.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+        curGameID = gameID;
+        return SET_TEXT_COLOR_YELLOW + String.format("You have joined game #%s", Integer.parseInt(params[0]))
+                + RESET_TEXT_COLOR + RESET_BG_COLOR;
     }
 
     public String observe(String... params) throws DataAccessException {
@@ -181,19 +185,23 @@ public class Client {
             return RESET_TEXT_COLOR;
         }
         state = State.PLAYING;
-        websocket.connect(authToken, gameID);
-        return "";
+        websocket.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+        curGameID = gameID;
+        return SET_TEXT_COLOR_YELLOW + String.format("You are now observing game #%s", Integer.parseInt(params[0]))
+                + RESET_TEXT_COLOR;
     }
 
     public String redraw() throws DataAccessException {
         assertState(State.PLAYING);
-        return "TODO: redraw";
+        websocket.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, curGameID);
+        return "";
     }
 
     public String leave() throws DataAccessException {
         assertState(State.PLAYING);
         state = State.SIGNEDIN;
-        return "TODO: leave";
+        websocket.sendCommand(UserGameCommand.CommandType.LEAVE, authToken, curGameID);
+        return SET_TEXT_COLOR_YELLOW + "You have left the game" + RESET_TEXT_COLOR;
     }
 
     public String move() throws DataAccessException {
