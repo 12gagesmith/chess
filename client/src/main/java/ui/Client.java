@@ -219,7 +219,7 @@ public class Client {
         ChessPosition endPosition = new ChessPosition(Integer.parseInt(rawInput[3]), getNum(rawInput[2]));
         ChessMove move = new ChessMove(startPosition, endPosition, null);
         websocket.sendCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, curGameID, move);
-        return SET_TEXT_COLOR_YELLOW + "Move made. Please wait for other player to move" + RESET_TEXT_COLOR;
+        return "";
     }
 
     public String resign() throws DataAccessException {

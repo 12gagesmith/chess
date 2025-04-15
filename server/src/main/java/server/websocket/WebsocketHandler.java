@@ -21,12 +21,10 @@ import static chess.ChessGame.TeamColor.*;
 public class WebsocketHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
-    private final UserDAO userDAO;
     private final AuthDAO authDAO;
     private final GameDAO gameDAO;
 
-    public WebsocketHandler(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
-        this.userDAO = userDAO;
+    public WebsocketHandler(AuthDAO authDAO, GameDAO gameDAO) {
         this.authDAO = authDAO;
         this.gameDAO = gameDAO;
     }
@@ -93,6 +91,10 @@ public class WebsocketHandler {
             GameData gameData = gameDAO.getGame(gameID);
             ChessGame game = gameData.game();
             String user = authData.username();
+            if (game.gameOver) {
+                sendError(user, "The game is over");
+                return;
+            }
             ChessGame.TeamColor userColor;
             if (user.equals(gameData.whiteUsername())) {
                 userColor = WHITE;
@@ -129,16 +131,28 @@ public class WebsocketHandler {
                 return;
             }
             game.makeMove(move);
+            String winner = checkOver(game);
             GameData updatedGame = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
             gameDAO.updateGame(updatedGame, gameID);
             ServerMessage loadMessage = new LoadGameMessage(updatedGame, null);
             String startPosition = String.format("%s%s", getAlpha(move.getStartPosition().getColumn()), move.getStartPosition().getRow());
             String endPosition = String.format("%s%s", getAlpha(move.getEndPosition().getColumn()), move.getEndPosition().getRow());
             ServerMessage notificationMessage = new NotificationMessage(String.format("%s moved their %s from %s to %s",
-                    user, piece.getPieceType(), startPosition, endPosition));
+                    user, piece.getPieceType().toString().toLowerCase(), startPosition, endPosition));
             connections.sendOne(user, loadMessage);
             connections.broadcast(user, gameID, loadMessage);
             connections.broadcast(user, gameID, notificationMessage);
+            if (winner == null) {
+                return;
+            }
+            ServerMessage gameOverMessage;
+            switch (winner) {
+                case "WHITE" -> gameOverMessage = new NotificationMessage(String.format("%s wins the game!", gameData.whiteUsername()));
+                case "BLACK" -> gameOverMessage = new NotificationMessage(String.format("%s wins the game!", gameData.blackUsername()));
+                case "DRAW" -> gameOverMessage = new NotificationMessage("Stalemate. Nobody wins.");
+                default -> {return;}
+            }
+            connections.broadcast("", gameID, gameOverMessage);
         } catch (IOException | InvalidMoveException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }
@@ -147,6 +161,21 @@ public class WebsocketHandler {
     private void sendError(String user, String message) throws IOException {
         ServerMessage errorMessage = new ErrorMessage(message);
         connections.sendOne(user, errorMessage);
+    }
+
+    private String checkOver(ChessGame game) {
+        if (game.isInCheck(WHITE)) {
+            game.gameOver = true;
+            return "BLACK";
+        } else if (game.isInCheck(BLACK)) {
+            game.gameOver = true;
+            return "WHITE";
+        } else if (game.isInStalemate(WHITE) || game.isInStalemate(BLACK)) {
+            game.gameOver = true;
+            return "DRAW";
+        } else  {
+            return null;
+        }
     }
 
     private String getAlpha(int n) {

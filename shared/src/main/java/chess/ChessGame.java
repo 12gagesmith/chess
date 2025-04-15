@@ -13,11 +13,13 @@ public class ChessGame {
 
     private ChessBoard myBoard;
     private TeamColor teamTurn;
+    public boolean gameOver;
 
     public ChessGame() {
         this.myBoard = new ChessBoard();
         myBoard.resetBoard();
         this.teamTurn = TeamColor.WHITE;
+        this.gameOver = false;
     }
 
     /**
