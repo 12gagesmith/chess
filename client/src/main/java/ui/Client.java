@@ -224,7 +224,8 @@ public class Client {
 
     public String resign() throws DataAccessException {
         assertState(State.PLAYING);
-        return "TODO: resign";
+        websocket.sendCommand(UserGameCommand.CommandType.RESIGN, authToken, curGameID, null);
+        return "";
     }
 
     public String highlight(String... params) throws DataAccessException {

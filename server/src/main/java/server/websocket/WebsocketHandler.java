@@ -43,7 +43,7 @@ public class WebsocketHandler {
         switch (usc.getCommandType()) {
             case CONNECT -> connect(usc.getAuthToken(), usc.getGameID(), session);
             case LEAVE -> leave(usc.getAuthToken(), usc.getGameID());
-            case RESIGN -> resign();
+            case RESIGN -> resign(usc.getAuthToken(), usc.getGameID());
         }
     }
 
@@ -59,8 +59,7 @@ public class WebsocketHandler {
             String user = authData.username();
             connections.add(user, gameID, session);
             if (gameData == null) {
-                ServerMessage errorMessage = new ErrorMessage("Invalid game ID");
-                connections.sendOne(user, errorMessage);
+                sendError(user, "Invalid game ID");
                 return;
             }
             String message;
@@ -239,5 +238,33 @@ public class WebsocketHandler {
         }
     }
 
-    private void resign() {}
+    private void resign(String authToken, int gameID) throws DataAccessException {
+        try {
+            AuthData authData = authDAO.getAuth(authToken);
+            String user = authData.username();
+            GameData gameData = gameDAO.getGame(gameID);
+            String message;
+            if (user.equals(gameData.whiteUsername())) {
+                message = String.format("%s resigned. %s wins!", gameData.whiteUsername(), gameData.blackUsername());
+            } else if (user.equals(gameData.blackUsername())) {
+                message = String.format("%s resigned. %s wins!", gameData.blackUsername(), gameData.whiteUsername());
+            } else {
+                sendError(user, "You cannot resign as an observer");
+                return;
+            }
+            ChessGame game = gameData.game();
+            if (game.gameOver) {
+                sendError(user, "The game is already over");
+                return;
+            }
+            game.gameOver = true;
+            GameData resignedGame = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(),
+                    gameData.gameName(), game);
+            gameDAO.updateGame(resignedGame, gameID);
+            ServerMessage endMessage = new NotificationMessage(message);
+            connections.broadcast("", gameID, endMessage);
+        } catch (IOException ex) {
+            throw new DataAccessException(500, ex.getMessage());
+        }
+    }
 }
