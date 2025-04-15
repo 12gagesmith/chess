@@ -131,6 +131,7 @@ public class WebsocketHandler {
             }
             game.makeMove(move);
             String winner = checkOver(game);
+            String checkString = checkCheck(game, gameData.whiteUsername(), gameData.blackUsername());
             GameData updatedGame = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
             gameDAO.updateGame(updatedGame, gameID);
             ServerMessage loadMessage = new LoadGameMessage(updatedGame, null);
@@ -141,17 +142,19 @@ public class WebsocketHandler {
             connections.sendOne(user, loadMessage);
             connections.broadcast(user, gameID, loadMessage);
             connections.broadcast(user, gameID, notificationMessage);
-            if (winner == null) {
-                return;
+            ServerMessage checkMessage;
+            if (winner != null) {
+                switch (winner) {
+                    case "WHITE" -> checkMessage = new NotificationMessage(String.format("%s wins the game!", gameData.whiteUsername()));
+                    case "BLACK" -> checkMessage = new NotificationMessage(String.format("%s wins the game!", gameData.blackUsername()));
+                    case "DRAW" -> checkMessage = new NotificationMessage("Stalemate. Nobody wins.");
+                    default -> {return;}
+                }
+                connections.broadcast("", gameID, checkMessage);
+            } else if (checkString != null) {
+                checkMessage = new NotificationMessage(checkString);
+                connections.broadcast("", gameID, checkMessage);
             }
-            ServerMessage gameOverMessage;
-            switch (winner) {
-                case "WHITE" -> gameOverMessage = new NotificationMessage(String.format("%s wins the game!", gameData.whiteUsername()));
-                case "BLACK" -> gameOverMessage = new NotificationMessage(String.format("%s wins the game!", gameData.blackUsername()));
-                case "DRAW" -> gameOverMessage = new NotificationMessage("Stalemate. Nobody wins.");
-                default -> {return;}
-            }
-            connections.broadcast("", gameID, gameOverMessage);
         } catch (IOException | InvalidMoveException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }
@@ -163,16 +166,26 @@ public class WebsocketHandler {
     }
 
     private String checkOver(ChessGame game) {
-        if (game.isInCheck(WHITE)) {
+        if (game.isInCheckmate(WHITE)) {
             game.gameOver = true;
             return "BLACK";
-        } else if (game.isInCheck(BLACK)) {
+        } else if (game.isInCheckmate(BLACK)) {
             game.gameOver = true;
             return "WHITE";
         } else if (game.isInStalemate(WHITE) || game.isInStalemate(BLACK)) {
             game.gameOver = true;
             return "DRAW";
         } else  {
+            return null;
+        }
+    }
+
+    private String checkCheck(ChessGame game, String whiteUser, String blackUser) {
+        if (game.isInCheck(WHITE)) {
+            return String.format("%s is in check!", whiteUser);
+        } else if (game.isInCheck(BLACK)) {
+            return String.format("%s is in check!", blackUser);
+        } else {
             return null;
         }
     }
