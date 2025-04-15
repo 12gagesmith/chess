@@ -37,7 +37,7 @@ public class WebsocketHandler {
             if (mmc.move.getStartPosition().equals(mmc.move.getEndPosition())) {
                 highlight(mmc.getAuthToken(), mmc.getGameID(), mmc.move);
             } else {
-                make_move(mmc.getAuthToken(), mmc.getGameID(), mmc.move, session);
+                makeMove(mmc.getAuthToken(), mmc.getGameID(), mmc.move, session);
             }
         }
         switch (usc.getCommandType()) {
@@ -79,7 +79,7 @@ public class WebsocketHandler {
         }
     }
 
-    private void make_move(String authToken, int gameID, ChessMove move, Session session) throws DataAccessException {
+    private void makeMove(String authToken, int gameID, ChessMove move, Session session) throws DataAccessException {
         try {
             AuthData authData = authDAO.getAuth(authToken);
             if (authData == null) {
