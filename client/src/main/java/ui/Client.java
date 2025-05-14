@@ -197,7 +197,7 @@ public class Client {
 
     public String redraw() throws DataAccessException {
         assertState(State.PLAYING);
-        websocket.sendCommand(UserGameCommand.CommandType.CONNECT, authToken, curGameID, null);
+        websocket.sendCommand(UserGameCommand.CommandType.REDRAW, authToken, curGameID, null);
         return "";
     }
 

@@ -42,6 +42,7 @@ public class WebsocketHandler {
         }
         switch (usc.getCommandType()) {
             case CONNECT -> connect(usc.getAuthToken(), usc.getGameID(), session);
+            case REDRAW -> redraw(usc.getAuthToken(), usc.getGameID());
             case LEAVE -> leave(usc.getAuthToken(), usc.getGameID());
             case RESIGN -> resign(usc.getAuthToken(), usc.getGameID());
         }
@@ -74,6 +75,18 @@ public class WebsocketHandler {
             ServerMessage gameMessage = new LoadGameMessage(gameData, null);
             connections.sendOne(user, gameMessage);
             connections.broadcast(user, gameID, notificationMessage);
+        } catch (IOException ex) {
+            throw new DataAccessException(500, ex.getMessage());
+        }
+    }
+
+    private void redraw(String authToken, int gameID) throws DataAccessException {
+        try {
+            AuthData authData = authDAO.getAuth(authToken);
+            GameData gameData = gameDAO.getGame(gameID);
+            String user = authData.username();
+            ServerMessage gameMessage = new LoadGameMessage(gameData, null);
+            connections.sendOne(user, gameMessage);
         } catch (IOException ex) {
             throw new DataAccessException(500, ex.getMessage());
         }

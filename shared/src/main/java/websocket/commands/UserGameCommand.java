@@ -25,6 +25,7 @@ public class UserGameCommand {
     public enum CommandType {
         CONNECT,
         MAKE_MOVE,
+        REDRAW,
         LEAVE,
         RESIGN
     }
