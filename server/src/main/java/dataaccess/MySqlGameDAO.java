@@ -38,8 +38,10 @@ public class MySqlGameDAO implements GameDAO{
                 try (var rs = ps.executeQuery()) {
                     while (rs.next()) {
                         GameData gameData = readGame(rs);
-                        listOfGames.add(new GameList(gameData.gameID(), gameData.whiteUsername(),
-                                gameData.blackUsername(), gameData.gameName()));
+                        if (!gameData.game().gameOver) {
+                            listOfGames.add(new GameList(gameData.gameID(), gameData.whiteUsername(),
+                                    gameData.blackUsername(), gameData.gameName()));
+                        }
                     }
                 }
             }
